@@ -1,4 +1,5 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Role } from "src/roles/entities/role.entity";
+import { Column, CreateDateColumn, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity('users') //aqui definimos el nombre de la tabla 
 export class User {
@@ -51,6 +52,20 @@ export class User {
 
     @Column({ type: 'timestamp', nullable: true })
     deleted_at: Date | null;
+
+    @ManyToMany(() => Role, (role) => role.user)
+    @JoinTable({
+        name: 'user_roles',
+        joinColumn: {
+            name: 'user_id',
+            referencedColumnName: 'id'
+        },
+        inverseJoinColumn: {
+            name: 'role_id',
+            referencedColumnName: 'id'
+        }
+    })
+    roles: Role[]
 
 
 

@@ -5,6 +5,9 @@ import { UsersModule } from './users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { config } from 'process';
 import { ConfigModule } from '@nestjs/config';
+import { RolesModule } from './roles/roles.module';
+import { RolesSeeder } from './seeders/roles.seeder';
+import { Role } from './roles/entities/role.entity';
 
 @Module({
   imports: [
@@ -22,8 +25,12 @@ import { ConfigModule } from '@nestjs/config';
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
     }),
-    UsersModule],
+
+    TypeOrmModule.forFeature([Role]),
+
+    UsersModule,
+    RolesModule],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, RolesSeeder],
 })
 export class AppModule {}
