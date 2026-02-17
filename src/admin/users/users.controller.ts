@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -15,10 +24,9 @@ export class UsersController {
   }
 
   @Get()
-findAll(@Query() filters: FiltrosUserDto) {
-  return this.usersService.findAll( filters);
-}
-
+  findAll(@Query() filters: FiltrosUserDto) {
+    return this.usersService.findAll(filters);
+  }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
@@ -30,8 +38,11 @@ findAll(@Query() filters: FiltrosUserDto) {
     return this.usersService.update(id, updateUserDto);
   }
 
-   @Patch(':id/password')
-  updatepassword(@Param('id') id: string, @Body() updateDto: UpdatePasswordDto) {
+  @Patch(':id/password')
+  updatepassword(
+    @Param('id') id: string,
+    @Body() updateDto: UpdatePasswordDto,
+  ) {
     return this.usersService.updatePassword(id, updateDto);
   }
 

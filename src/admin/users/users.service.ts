@@ -57,14 +57,22 @@ export class UsersService {
     const users = await query
       .skip((page - 1) * limit)
       .take(filters.limit)
+      .leftJoinAndSelect('user.roles', 'roles')
       .getMany();
+
+      
 
    return users.map(user => ({
     id: user.id,
     username: user.username,
     ultimo_login: user.ultimo_login,
     estado: user.estado,
-    origen_registro: user.origen_registro
+    origen_registro: user.origen_registro,
+    roles: user.roles.map(role => ({
+      id: role.id,
+      nombre: role.nombre,
+      descripcion: role.descripcion
+    }))
 
    })
   )

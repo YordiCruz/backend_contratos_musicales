@@ -2,14 +2,17 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
-import { RolesSeeder } from './seeders/roles.seeder';
+import { RolesSeeder } from './database/seeders/roles.seeder';
+import { PermissionsSeeder } from './database/seeders/permissions.seeder';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+    const permissionsSeeder = app.get(PermissionsSeeder);
+await permissionsSeeder.run();
+
   const seeders = app.get(RolesSeeder);
   await seeders.run();
-
 
   app.useGlobalPipes(new ValidationPipe());
   

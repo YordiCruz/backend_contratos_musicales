@@ -1,4 +1,4 @@
-import { Role } from "src/roles/entities/role.entity";
+import { Role } from "src/admin/roles/entities/role.entity";
 import { Column, CreateDateColumn, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity('users') //aqui definimos el nombre de la tabla 
