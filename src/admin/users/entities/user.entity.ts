@@ -1,5 +1,6 @@
+import { Persona } from "src/admin/personas/entities/persona.entity";
 import { Role } from "src/admin/roles/entities/role.entity";
-import { Column, CreateDateColumn, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity('users') //aqui definimos el nombre de la tabla 
 export class User {
@@ -66,6 +67,10 @@ export class User {
         }
     })
     roles: Role[]
+
+    @OneToOne(()=> Persona, (persona) => persona.user)
+    @JoinColumn({name: 'persona_id'})
+    persona: Persona
 
 
 

@@ -6,12 +6,14 @@ import { Role } from './roles/entities/role.entity';
 import { UsersModule } from './users/users.module';
 import { RolesModule } from './roles/roles.module';
 import { PermissionsModule } from './permissions/permissions.module';
+import { PersonasModule } from './personas/personas.module';
 
 @Module({
     imports: [TypeOrmModule.forFeature([User, Role, Permission]),
     UsersModule,
     RolesModule,
-    PermissionsModule
+    PermissionsModule,
+    PersonasModule
 ],
 
 

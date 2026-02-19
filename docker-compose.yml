@@ -10,7 +10,7 @@ services:
       POSTGRES_PASSWORD: admin123
       POSTGRES_DB: orquesta_db
     ports:
-      - "5433:5432"
+      - "5445:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 

@@ -1,17 +1,22 @@
+import { ValidateNested } from "class-validator";
+import { CreateUserDataDto } from "./create-user-data.dto";
+import { CreatePersonaDto } from "src/admin/personas/dto/create-persona.dto";
+import { Type } from "class-transformer";
+import { ApiProperty } from "@nestjs/swagger";
 export class CreateUserDto {
-    /** Nombre de usuario único */
-  username: string;
 
-  /** Hash o contraseña en texto plano (según tu lógica de negocio) */
-  password_hash: string;
+  @ApiProperty({ type: () => CreatePersonaDto })
+  @ValidateNested()
+  @Type(() => CreatePersonaDto)
+  persona: CreatePersonaDto;
 
-  /** Fecha del último login (opcional) */
-  ultimo_login?: Date;
 
-  /** Estado del usuario (por defecto: 'activo') */
-  estado?: string = 'activo';
+  @ApiProperty({ type: () => CreateUserDataDto })
+  @ValidateNested()
+  @Type(() => CreateUserDataDto)
+  user: CreateUserDataDto;
 
-  /** Origen del registro (por defecto: 'admin') */
-  origen_registro?: string = 'admin';
+
+
 
 }

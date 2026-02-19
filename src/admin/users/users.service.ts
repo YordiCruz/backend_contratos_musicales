@@ -1,29 +1,59 @@
 import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
+import {  DataSource, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { ResponseUserDto } from './dto/response-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { FiltrosUserDto } from './dto/filtros-user.dto';
+import { Persona } from '../personas/entities/persona.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
-    private readonly userrepo: Repository<User>
-  ){}
-  async create(createUserDto: CreateUserDto): Promise<User> {
-    const user = this.userrepo.create(createUserDto)
-    const password = createUserDto.password_hash
+    private readonly userrepo: Repository<User>,
 
-    const hash = await bcrypt.hash(password, 12)
-    user.password_hash = hash
-    
-    return await this.userrepo.save(user)
-  }
+    @InjectRepository(Persona)
+    private readonly personarepo: Repository<Persona>,
+
+    @InjectDataSource()
+    private readonly dataSource: DataSource
+
+  ){}
+
+  async create(createUserDto: CreateUserDto): Promise<User> {
+  return await this.dataSource.transaction(async manager => {
+
+    const { persona: personaDto, user: userDto } = createUserDto;
+
+    // 1. Validar que el username no exista
+    const existe = await manager.findOne(User, {
+      where: { username: userDto.username }
+    });
+
+    if (existe) {
+      throw new Error(`El usuario '${userDto.username}' ya existe`);
+    }
+
+    // 2. Guardar persona
+    const persona = await manager.save(Persona, personaDto);
+
+    // 3. Preparar usuario
+    const passwordHash = await bcrypt.hash(userDto.password_hash, 12);
+
+    const nuevoUsuario = manager.create(User, {
+      ...userDto,
+      password_hash: passwordHash,
+      persona
+    });
+
+    // 4. Guardar usuario
+    return await manager.save(User, nuevoUsuario);
+  });
+}
 
 
   async findAll(
@@ -58,6 +88,7 @@ export class UsersService {
       .skip((page - 1) * limit)
       .take(filters.limit)
       .leftJoinAndSelect('user.roles', 'roles')
+      .leftJoinAndSelect('user.persona', 'persona')
       .getMany();
 
       
@@ -72,9 +103,18 @@ export class UsersService {
       id: role.id,
       nombre: role.nombre,
       descripcion: role.descripcion
-    }))
-
+    })),
+   persona: user.persona ? {
+  id: user.persona.id,
+  nombre: user.persona.nombre,
+  apellido: user.persona.apellido,
+  email: user.persona.email,
+  telefono: user.persona.telefono,
+  documento_identidad: user.persona.documento_identidad
+   }: null
+   
    })
+  
   )
   }
 
@@ -120,7 +160,8 @@ export class UsersService {
       username: saved.username,
       ultimo_login: saved.ultimo_login,
       estado: saved.estado,
-      origen_registro: saved.origen_registro
+      origen_registro: saved.origen_registro,
+      persona: saved.persona
     }
   }
 

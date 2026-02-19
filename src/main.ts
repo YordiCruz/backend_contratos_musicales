@@ -6,6 +6,9 @@ import { RolesSeeder } from './database/seeders/roles.seeder';
 import { PermissionsSeeder } from './database/seeders/permissions.seeder';
 
 async function bootstrap() {
+
+
+
   const app = await NestFactory.create(AppModule);
 
     const permissionsSeeder = app.get(PermissionsSeeder);
@@ -14,7 +17,7 @@ await permissionsSeeder.run();
   const seeders = app.get(RolesSeeder);
   await seeders.run();
 
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
   
   const config = new DocumentBuilder()
     .setTitle('Pagina web para la gestion de informacion de contratos musicales')

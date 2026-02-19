@@ -1,16 +1,13 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { UsersModule } from './admin/users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { config } from 'process';
 import { ConfigModule } from '@nestjs/config';
-import { RolesModule } from './admin/roles/roles.module';
-import { RolesSeeder } from './database/seeders/roles.seeder';
-import { Role } from './admin/roles/entities/role.entity';
-import { PermissionsModule } from './admin/permissions/permissions.module';
+
 import { AdminModule } from './admin/admin.module';
 import { DatabaseModule } from './database/database.module';
+
+
 
 @Module({
   imports: [
@@ -29,11 +26,8 @@ import { DatabaseModule } from './database/database.module';
       synchronize: true,
     }),
 
-    // TypeOrmModule.forFeature([Role]),
 
-    // UsersModule,
-    // RolesModule,
-    // PermissionsModule,
+    
     AdminModule,
 
     DatabaseModule],
