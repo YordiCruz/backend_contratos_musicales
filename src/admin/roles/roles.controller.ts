@@ -30,13 +30,7 @@ export class RolesController {
     return this.rolesService.findAll();
   }
 
-  @Post(':userId/assign')
-  assignRoles(
-    @Param('userId') userId: string,
-    @Body() dto: AssignRolesDto,
-  ) {
-    return this.rolesService.assignRoles(userId, dto);
-  }
+ 
 
   @Delete(':userId/remove')
   removeRole(
@@ -45,5 +39,11 @@ export class RolesController {
   ) {
     return this.rolesService.removeRole(userId, dto.roleId);
   }
+
+   @Post('assign-roles/:userId')
+  assignRoles(@Param('userId') userId: string, @Body() dto: AssignRolesDto) {
+    return this.rolesService.assignRoles(userId, dto);
+  }
+
 
 }

@@ -7,7 +7,6 @@ export class CreateUserDataDto {
   @IsNotEmpty()
   username: string;
 
-
   /** Hash o contraseña en texto plano (según tu lógica de negocio) */
   @IsString()
   @MinLength(6)
@@ -26,4 +25,6 @@ export class CreateUserDataDto {
   @IsOptional()
   @IsString()
   origen_registro?: string = 'admin';
+
+  
 }
