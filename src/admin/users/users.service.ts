@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
@@ -9,6 +9,7 @@ import { ResponseUserDto } from './dto/response-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { FiltrosUserDto } from './dto/filtros-user.dto';
 import { Persona } from '../personas/entities/persona.entity';
+import { CreateUserDataDto } from './dto/create-user-data.dto';
 
 @Injectable()
 export class UsersService {
@@ -24,7 +25,7 @@ export class UsersService {
 
   ){}
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
+  async create(createUserDto: CreateUserDto, user: any): Promise<User> {
   return await this.dataSource.transaction(async manager => {
 
     const { persona: personaDto, user: userDto } = createUserDto;
@@ -38,6 +39,16 @@ export class UsersService {
       throw new Error(`El usuario '${userDto.username}' ya existe`);
     }
 
+
+    // 1. Validar que la persona no exista
+    const exis = await manager.findOne(Persona, {
+      where: { documento_identidad: personaDto.documento_identidad }
+    });
+
+    if (exis) {
+      throw new Error(`La persona con documento '${personaDto.documento_identidad}' ya existe`);
+    }
+
     // 2. Guardar persona
     const persona = await manager.save(Persona, personaDto);
 
@@ -47,7 +58,8 @@ export class UsersService {
     const nuevoUsuario = manager.create(User, {
       ...userDto,
       password_hash: passwordHash,
-      persona
+      persona,
+      registrado_por: user?.id ? { id: user.id } : undefined
     });
 
     // 4. Guardar usuario
@@ -203,4 +215,28 @@ export class UsersService {
 
   return { message: 'Usuario desactivado correctamente' };
 }
+
+
+async createUserFromExistingPersona(idPersona: string, dto: CreateUserDataDto) {
+  const persona = await this.personarepo.findOne({ where: { id: idPersona } });
+
+  if (!persona) {
+    throw new NotFoundException('La persona no existe');
+  }
+
+  // Verificar que no tenga ya un usuario
+  const existingUser = await this.userrepo.findOne({ where: { persona: { id: idPersona } } });
+  if (existingUser) {
+    throw new BadRequestException('Esta persona ya tiene un usuario asignado');
+  }
+
+  const user = this.userrepo.create({
+    ...dto,
+    persona,
+  });
+
+  return await this.userrepo.save(user);
+}
+
+
 }

@@ -6,6 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 
 import { AdminModule } from './admin/admin.module';
 import { DatabaseModule } from './database/database.module';
+import { ClientsModule } from './client/clients/clients.module';
 
 
 
@@ -30,7 +31,9 @@ import { DatabaseModule } from './database/database.module';
     
     AdminModule,
 
-    DatabaseModule],
+    DatabaseModule,
+
+    ClientsModule],
   controllers: [AppController],
   providers: [AppService],
 })

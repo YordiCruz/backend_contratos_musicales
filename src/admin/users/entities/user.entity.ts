@@ -1,6 +1,7 @@
 import { Persona } from "src/admin/personas/entities/persona.entity";
 import { Role } from "src/admin/roles/entities/role.entity";
-import { Column, CreateDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Client } from "src/client/clients/entities/client.entity";
+import { Column, CreateDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity('users') //aqui definimos el nombre de la tabla 
 export class User {
@@ -44,15 +45,6 @@ export class User {
     origen_registro: string;
 
 
-    @CreateDateColumn()
-    creado_en: Date;
-
-    @UpdateDateColumn()
-    actualizado_en: Date;
-
-
-    @Column({ type: 'timestamp', nullable: true })
-    deleted_at: Date | null;
 
     @ManyToMany(() => Role, (role) => role.user)
     @JoinTable({
@@ -68,10 +60,26 @@ export class User {
     })
     roles: Role[]
 
+    @ManyToOne(() => User, { nullable: true })
+    @JoinColumn({ name: 'registrado_por' })
+    registrado_por: User;
+
     @OneToOne(()=> Persona, (persona) => persona.user)
     @JoinColumn({name: 'persona_id'})
     persona: Persona
 
+    @OneToMany(() => Client, (cliente) => cliente.registrado_por)
+    clientes_registrados: Client[];
 
+    
+    @CreateDateColumn()
+    creado_en: Date;
+
+    @UpdateDateColumn()
+    actualizado_en: Date;
+
+
+    @Column({ type: 'timestamp', nullable: true })
+    deleted_at: Date | null;
 
 }

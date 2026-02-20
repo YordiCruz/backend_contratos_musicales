@@ -7,20 +7,27 @@ import {
   Param,
   Delete,
   Query,
+  Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { FiltrosUserDto } from './dto/filtros-user.dto';
+import { RolesService } from '../roles/roles.service';
+import { CreateUserDataDto } from './dto/create-user-data.dto';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+
+
+  ) {}
 
   @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+  create(@Req() req, @Body() createUserDto: CreateUserDto) {
+    return this.usersService.create(createUserDto, req.user);
   }
 
   @Get()
@@ -50,4 +57,15 @@ export class UsersController {
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);
   }
+
+ 
+  @Post('from-persona/:idPersona')
+createUserFromPersona(
+  @Param('idPersona') idPersona: string,
+  @Body() dto: CreateUserDataDto
+) {
+  return this.usersService.createUserFromExistingPersona(idPersona, dto);
+}
+
+
 }
