@@ -8,14 +8,14 @@ import { RolesModule } from './roles/roles.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { PersonasModule } from './personas/personas.module';
 import { IntegrantesModule } from './integrantes/integrantes.module';
+import { ReemplazosModule } from './reemplazos/reemplazos.module';
 
 @Module({
     imports: [TypeOrmModule.forFeature([User, Role, Permission]),
     UsersModule,
     RolesModule,
     PermissionsModule,
-    PersonasModule,
-    IntegrantesModule
+    PersonasModule
 ],
 
 
