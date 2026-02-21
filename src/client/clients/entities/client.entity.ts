@@ -1,6 +1,6 @@
 import { Persona } from "src/admin/personas/entities/persona.entity";
 import { User } from "src/admin/users/entities/user.entity";
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity('clients')
 export class Client {
@@ -43,11 +43,11 @@ export class Client {
   @CreateDateColumn({ name: 'creado_en' })
   creado_en: Date;
 
-  @CreateDateColumn({ name: 'actualizado_en' })
+  @UpdateDateColumn({ name: 'actualizado_en' })
   actualizado_en: Date;
 
-  @Column({ type: 'timestamp', nullable: true })
-deleted_at: Date | null;
+  @DeleteDateColumn({ type: 'timestamp', nullable: true })
+  eliminado_en: Date | null;
 
   @Column({ type: 'varchar', length: 20, default: 'activo' })
   estado: string;
