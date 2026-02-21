@@ -7,7 +7,7 @@ import { UsersModule } from './users/users.module';
 import { RolesModule } from './roles/roles.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { PersonasModule } from './personas/personas.module';
-import { IntegrantesModule } from './integrantes/integrantes.module';
+import { EspecialidadesModule } from './especialidades/especialidades.module';
 import { ReemplazosModule } from './reemplazos/reemplazos.module';
 
 @Module({
@@ -15,9 +15,7 @@ import { ReemplazosModule } from './reemplazos/reemplazos.module';
     UsersModule,
     RolesModule,
     PermissionsModule,
-    PersonasModule,
-    IntegrantesModule,
-    ReemplazosModule
+    PersonasModule
 ],
 
 
