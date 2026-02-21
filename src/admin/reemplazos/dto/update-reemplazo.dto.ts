@@ -1,4 +1,4 @@
 import { PartialType } from '@nestjs/swagger';
-import { CreateReemplazoDto } from './create-reemplazo.dto';
+import { CreateReemplazoDataDto } from './create-reemplazo-data.dto';
 
-export class UpdateReemplazoDto extends PartialType(CreateReemplazoDto) {}
+export class UpdateReemplazoDto extends PartialType(CreateReemplazoDataDto) {}
