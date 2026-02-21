@@ -18,7 +18,7 @@ export class Reemplazo {
     @Column({ type: 'varchar', length: 4, nullable: false, enum: ['USD', 'BOB'] })
     moneda: string
 
-    @Column({ type: 'varchar', length: 4, nullable: false, default: 'activo' })
+    @Column({ type: 'varchar', nullable: false, default: 'activo' })
     estado: string
 
     @Column({ type: 'boolean', nullable: false, default: true })
