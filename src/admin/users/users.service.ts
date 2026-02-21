@@ -210,7 +210,7 @@ export class UsersService {
   }
 
   user.estado = 'inactivo';
-  user.deleted_at = new Date();
+  user.eliminado_en = new Date();
   await this.userrepo.save(user);
 
   return { message: 'Usuario desactivado correctamente' };

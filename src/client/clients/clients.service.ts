@@ -179,7 +179,7 @@ async remove(id: string) {
   }
 
   client.estado = 'inactivo';
-  client.deleted_at = new Date();
+  client.eliminado_en = new Date();
   await this.clienteRepo.save(client);
 
   return { message: 'Cliente desactivado correctamente' };
