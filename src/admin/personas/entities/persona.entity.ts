@@ -1,3 +1,4 @@
+import { Integrante } from 'src/admin/integrantes/entities/integrante.entity';
 import { User } from 'src/admin/users/entities/user.entity';
 import { Client } from 'src/client/clients/entities/client.entity';
 import {
@@ -61,4 +62,7 @@ export class Persona {
 
   @OneToOne(() => Client, (cliente) => cliente.persona)
   cliente: Client;
+
+  @OneToOne(() => Integrante, (integrante) => integrante.persona)
+  integrante: Integrante
 }

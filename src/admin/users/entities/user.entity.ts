@@ -1,7 +1,7 @@
 import { Persona } from "src/admin/personas/entities/persona.entity";
 import { Role } from "src/admin/roles/entities/role.entity";
 import { Client } from "src/client/clients/entities/client.entity";
-import { Column, CreateDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity('users') //aqui definimos el nombre de la tabla 
 export class User {
@@ -72,14 +72,13 @@ export class User {
     clientes_registrados: Client[];
 
     
-    @CreateDateColumn()
+    @CreateDateColumn({ type: 'timestamp' })
     creado_en: Date;
 
-    @UpdateDateColumn()
+    @UpdateDateColumn({ type: 'timestamp' })
     actualizado_en: Date;
 
-
-    @Column({ type: 'timestamp', nullable: true })
-    deleted_at: Date | null;
+    @DeleteDateColumn({ type: 'timestamp', nullable: true })
+    eliminado_en: Date | null;
 
 }
