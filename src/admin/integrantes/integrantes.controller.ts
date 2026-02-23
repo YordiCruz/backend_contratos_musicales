@@ -14,7 +14,11 @@ export class IntegrantesController {
   }
 
   @Get()
+<<<<<<< HEAD
   findAll( @Param() filters: FiltroIntegranteDataDto) {
+=======
+  findAll( @Query() filters: FiltroIntegranteDataDto) {
+>>>>>>> feature/especialidades
     return this.integrantesService.findAll( filters);
   }
 

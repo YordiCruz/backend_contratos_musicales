@@ -1,7 +1,7 @@
 import { IsIn, IsNumberString, IsOptional, IsString } from "class-validator";
 
-export class FiltroIntegranteDataDto {
-     @IsOptional()
+export class FiltrosEspecialidadDto {
+      @IsOptional()
       @IsString()
       search?: string;
     
