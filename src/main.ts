@@ -4,18 +4,28 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import { RolesSeeder } from './database/seeders/roles.seeder';
 import { PermissionsSeeder } from './database/seeders/permissions.seeder';
+import { EspecialidadesSeeder } from './database/seeders/especialidades.seeder';
+import { CategoriasEspecialidadSeeder } from './database/seeders/categorias-especialidad.seeder';
 
 async function bootstrap() {
 
 
 
   const app = await NestFactory.create(AppModule);
-
+// if (process.env.SEED === 'true'){
     const permissionsSeeder = app.get(PermissionsSeeder);
 await permissionsSeeder.run();
 
   const seeders = app.get(RolesSeeder);
   await seeders.run();
+
+  const categoriaseeders = app.get(CategoriasEspecialidadSeeder);
+  await categoriaseeders.run();
+
+  const especialidadseeders = app.get(EspecialidadesSeeder);
+  await especialidadseeders.run();
+
+// }
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
   
@@ -31,7 +41,7 @@ await permissionsSeeder.run();
  
 
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT ?? 3070);
 
 
 }
