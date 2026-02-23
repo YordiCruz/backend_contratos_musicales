@@ -10,7 +10,7 @@ export class ResponseEspecialidadDto {
   nombre: string;
   descripcion?: string;
   estado: string;
-  categoria: CategoriaResponseDto;
+  categoria: CategoriaResponseDto | null;
   creado_en: Date;
   actualizado_en: Date;
 }
