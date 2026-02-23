@@ -9,13 +9,19 @@ import { PermissionsModule } from './permissions/permissions.module';
 import { PersonasModule } from './personas/personas.module';
 import { EspecialidadesModule } from './especialidades/especialidades.module';
 import { ReemplazosModule } from './reemplazos/reemplazos.module';
+import { IntegrantesModule } from './integrantes/integrantes.module';
+import { CategoriasEspecialidadsModule } from './especialidades/categorias_especialidads/categorias_especialidads.module';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([User, Role, Permission]),
+    imports: [
     UsersModule,
     RolesModule,
     PermissionsModule,
-    PersonasModule
+    PersonasModule,
+    EspecialidadesModule,
+    ReemplazosModule,
+    IntegrantesModule,
+    CategoriasEspecialidadsModule
 ],
 
 
