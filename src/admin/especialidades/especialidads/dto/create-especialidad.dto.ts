@@ -1,4 +1,4 @@
-import { IsIn, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { IsIn, IsNotEmpty, IsOptional, IsString, IsUUID } from "class-validator";
 import { Column, CreateDateColumn, DeleteDateColumn, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 export class CreateEspecialidadDto {
@@ -7,12 +7,13 @@ export class CreateEspecialidadDto {
     @IsNotEmpty()
     nombre: string
 
+    @IsUUID()
+    id_categoria:string
+
     @IsString()
     @IsOptional()
     descripcion?: string
 
-    @IsString({ message: 'El estado debe ser activo o inactivo' })
-    @IsIn(['activo', 'inactivo'])
-    estado?: string
+    
 
 }
