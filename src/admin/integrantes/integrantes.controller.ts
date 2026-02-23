@@ -14,7 +14,7 @@ export class IntegrantesController {
   }
 
   @Get()
-  findAll( @Param() filters: FiltroIntegranteDataDto) {
+  findAll( @Query() filters: FiltroIntegranteDataDto) {
     return this.integrantesService.findAll( filters);
   }
 
