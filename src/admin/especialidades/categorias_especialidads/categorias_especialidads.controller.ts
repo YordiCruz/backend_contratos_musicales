@@ -7,28 +7,28 @@ import { UpdateCategoriasEspecialidadDto } from './dto/update-categorias_especia
 export class CategoriasEspecialidadsController {
   constructor(private readonly categoriasEspecialidadsService: CategoriasEspecialidadsService) {}
 
-  @Post()
-  create(@Body() createCategoriasEspecialidadDto: CreateCategoriasEspecialidadDto) {
-    return this.categoriasEspecialidadsService.create(createCategoriasEspecialidadDto);
-  }
+  // @Post()
+  // create(@Body() createCategoriasEspecialidadDto: CreateCategoriasEspecialidadDto) {
+  //   return this.categoriasEspecialidadsService.create(createCategoriasEspecialidadDto);
+  // }
 
   @Get()
   findAll() {
     return this.categoriasEspecialidadsService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.categoriasEspecialidadsService.findOne(+id);
-  }
+  // @Get(':id')
+  // findOne(@Param('id') id: string) {
+  //   return this.categoriasEspecialidadsService.findOne(+id);
+  // }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCategoriasEspecialidadDto: UpdateCategoriasEspecialidadDto) {
-    return this.categoriasEspecialidadsService.update(+id, updateCategoriasEspecialidadDto);
-  }
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateCategoriasEspecialidadDto: UpdateCategoriasEspecialidadDto) {
+  //   return this.categoriasEspecialidadsService.update(+id, updateCategoriasEspecialidadDto);
+  // }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.categoriasEspecialidadsService.remove(+id);
-  }
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   return this.categoriasEspecialidadsService.remove(+id);
+  // }
 }
