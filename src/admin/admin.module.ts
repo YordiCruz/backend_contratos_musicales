@@ -11,6 +11,7 @@ import { EspecialidadesModule } from './especialidades/especialidades.module';
 import { ReemplazosModule } from './reemplazos/reemplazos.module';
 import { IntegrantesModule } from './integrantes/integrantes.module';
 import { CategoriasEspecialidadsModule } from './especialidades/categorias_especialidads/categorias_especialidads.module';
+import { EventosModule } from './eventos/eventos.module';
 
 @Module({
     imports: [
@@ -21,7 +22,8 @@ import { CategoriasEspecialidadsModule } from './especialidades/categorias_espec
     EspecialidadesModule,
     ReemplazosModule,
     IntegrantesModule,
-    CategoriasEspecialidadsModule
+    CategoriasEspecialidadsModule,
+    EventosModule
 ],
 
 
