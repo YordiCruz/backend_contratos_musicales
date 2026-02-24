@@ -4,9 +4,10 @@ import { IntegrantesController } from './integrantes.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Integrante } from './entities/integrante.entity';
 import { Persona } from '../personas/entities/persona.entity';
+import { Especialidad } from '../especialidades/especialidads/entities/especialidad.entity';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([Integrante])],
+  imports:[TypeOrmModule.forFeature([Integrante, Especialidad])],
   controllers: [IntegrantesController],
   providers: [IntegrantesService],
 })
