@@ -1,6 +1,7 @@
+import { Especialidad } from "src/admin/especialidades/especialidads/entities/especialidad.entity";
 import { Persona } from "src/admin/personas/entities/persona.entity";
 import { User } from "src/admin/users/entities/user.entity";
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity('group_replacements')
 export class Reemplazo {
@@ -36,4 +37,19 @@ export class Reemplazo {
 
     @DeleteDateColumn({ type: 'timestamp', nullable: true })
     eliminado_en: Date
+
+    @ManyToMany(() => Especialidad, especialidad => especialidad.reemplazos)
+    @JoinTable({
+        name: 'replacements_specialties',
+        joinColumn: {
+            name: 'id_reemplazo',
+            referencedColumnName: 'id'
+        },
+        inverseJoinColumn: {
+            name: 'id_especialidad',
+            referencedColumnName: 'id'
+        }
+    })
+    especialidades: Especialidad[]
+
 }

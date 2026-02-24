@@ -1,6 +1,7 @@
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToMany, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { CategoriasEspecialidad } from "../../categorias_especialidads/entities/categorias_especialidad.entity";
 import { Integrante } from "src/admin/integrantes/entities/integrante.entity";
+import { Reemplazo } from "src/admin/reemplazos/entities/reemplazo.entity";
 
 @Entity('specialties')
 export class Especialidad {
@@ -33,6 +34,9 @@ export class Especialidad {
 
     @ManyToMany(()=> Integrante, integrante => integrante.especialidades)
     integrantes: Integrante[]
+
+    @ManyToMany(()=> Reemplazo, reemplazo => reemplazo.especialidades)
+    reemplazos: Reemplazo[]
 
 }
 
