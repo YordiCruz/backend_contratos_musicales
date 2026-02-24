@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { CreateAdminAuthDto } from './dto/create-admin-auth.dto';
 import { UpdateAdminAuthDto } from './dto/update-admin-auth.dto';
+import { AdminLoginDto } from './dto/admin-login.dto';
 
 @Injectable()
 export class AdminAuthService {
-  create(createAdminAuthDto: CreateAdminAuthDto) {
+  create(createAdminAuthDto: AdminLoginDto) {
     return 'This action adds a new adminAuth';
   }
 
