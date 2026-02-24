@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateReemplazoDto } from './dto/create-reemplazo.dto';
 import { UpdateReemplazoDto } from './dto/update-reemplazo.dto';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
@@ -9,6 +9,9 @@ import { FiltrosReemplazoDto } from './dto/filtros-reemplazo.dto';
 import { ResponseReemplazoDto } from './dto/response-reemplazo.dto';
 import { CreateReemplazoDataDto } from './dto/create-reemplazo-data.dto';
 import { ResponseUpdateReemplazoDto } from './dto/response-update-reemplazo.dto';
+import { Especialidad } from '../especialidades/especialidads/entities/especialidad.entity';
+import { AsignarEspecialidadDto } from './dto/asignar-especialidad.dto';
+import { AsignarVariasEspecialidadesDto } from './dto/asignar-varias-especialidades.dto';
 
 @Injectable()
 export class ReemplazosService {
@@ -16,6 +19,9 @@ export class ReemplazosService {
     constructor(
       @InjectRepository(Reemplazo)
       private readonly reemplazoRepo: Repository<Reemplazo>,
+
+      @InjectRepository(Especialidad)
+      private readonly especialidadRepo: Repository<Especialidad>,
   
   
       @InjectDataSource()
@@ -222,4 +228,122 @@ export class ReemplazosService {
   
     return await this.reemplazoRepo.save(reempla);
   }
+
+  
+  async asignarEspecialidad(id: string, dto: AsignarEspecialidadDto) {
+    const reemplazo = await this.reemplazoRepo.findOne({
+      where: { id },
+      relations: ['especialidades'],
+    });
+  
+    if (!reemplazo) throw new NotFoundException('Reemplazo no encontrado');
+  
+    const especialidad = await this.especialidadRepo.findOne({
+      where: { id: dto.id_especialidad },
+    });
+  
+    if (!especialidad) throw new NotFoundException('Especialidad no encontrada');
+  
+    const yaExiste = reemplazo.especialidades.some(
+      e => e.id === dto.id_especialidad,
+    );
+  
+    if (yaExiste) {
+      throw new ConflictException('El reemplazo ya tiene esta especialidad');
+    }
+  
+    reemplazo.especialidades.push(especialidad);
+     await this.reemplazoRepo.save(reemplazo);
+    return {
+      message: `Se añadio correctamente la especialidad del reemplazo`,
+    }
+  
+  }
+  
+  
+  async asignarMultiplesEspecialidades(id: string, dto: AsignarVariasEspecialidadesDto) {
+    const reemplazo = await this.reemplazoRepo.findOne({
+      where: { id },
+      relations: ['especialidades'],
+    });
+  
+    if (!reemplazo) {
+      throw new NotFoundException('Reemplazo no encontrado');
+    }
+  
+    const especialidades = await this.especialidadRepo.findByIds(dto.ids_especialidades);
+  
+    if (especialidades.length !== dto.ids_especialidades.length) {
+      throw new NotFoundException('Una o más especialidades no existen');
+    }
+  
+    const idsActuales = new Set(reemplazo.especialidades.map(e => e.id));
+  
+    const nuevas = especialidades.filter(e => !idsActuales.has(e.id));
+  
+    if (nuevas.length === 0) {
+      return { message: 'Todas las especialidades ya estaban asignadas' };
+    }
+  
+    reemplazo.especialidades.push(...nuevas);
+  
+    await this.reemplazoRepo.save(reemplazo);
+  
+    return {
+      message: 'Especialidades asignadas correctamente',
+      asignadas: nuevas.map(e => e.nombre),
+    };
+  }
+  
+  
+  
+  async eliminarEspecialidad(id: string, id_especialidad: string) {
+    const reemplazo = await this.reemplazoRepo.findOne({
+      where: { id },
+      relations: ['especialidades'],
+    });
+  
+    if (!reemplazo) {
+      throw new NotFoundException('Reemplazo no encontrado');
+    }
+  
+    const tieneEspecialidad = reemplazo.especialidades.find(
+      e => e.id === id_especialidad,
+    );
+  
+    if (!tieneEspecialidad) {
+      throw new NotFoundException('El reemplazo no tiene esta especialidad');
+    }
+  
+    const nombreespecialidad = tieneEspecialidad.nombre
+  
+    reemplazo.especialidades = reemplazo.especialidades.filter(
+      e => e.id !== id_especialidad,
+    );
+  
+    await this.reemplazoRepo.save(reemplazo);
+  
+    return {
+      message: `Se quito correctamente la especialidad: ${nombreespecialidad} del reemplazo`,
+      
+    };
+  }
+  
+  
+  async listaEspecialidades(id: string) {
+    const reemplazo = await this.reemplazoRepo.findOne({
+      where: { id },
+      relations: ['especialidades'],
+    });
+  
+    if (!reemplazo) {
+      throw new NotFoundException('Integrante no encontrado');
+    }
+  
+    return reemplazo.especialidades;
+  }
+  
 }
+  
+
+
