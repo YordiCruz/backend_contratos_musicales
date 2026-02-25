@@ -30,7 +30,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 
 
   ],
-  controllers: [AdminAuthController],
   providers: [
     AdminAuthService,
     AdminJwtStrategy,

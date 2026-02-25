@@ -34,7 +34,7 @@ await permissionsSeeder.run();
     .setDescription('The cats API description')
     .setVersion('1.0')
     .addTag('endpoints')
-    .addBearerAuth()
+    .addBearerAuth()  //para que se pueda usar el token en swagger
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);

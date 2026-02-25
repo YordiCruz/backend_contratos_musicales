@@ -11,7 +11,7 @@ import { AdminAuthModule } from 'src/auth/admin-auth/admin-auth.module';
     TypeOrmModule.forFeature([Integrante, Especialidad]),
     AdminAuthModule
   ],
-  controllers: [IntegrantesController],
   providers: [IntegrantesService],
+  exports:[IntegrantesService]
 })
 export class IntegrantesModule {}

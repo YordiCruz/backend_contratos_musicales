@@ -12,6 +12,15 @@ import { ReemplazosModule } from './reemplazos/reemplazos.module';
 import { IntegrantesModule } from './integrantes/integrantes.module';
 import { CategoriasEspecialidadsModule } from './especialidades/categorias_especialidads/categorias_especialidads.module';
 import { AdminAuthModule } from 'src/auth/admin-auth/admin-auth.module';
+import { UsersController } from './users/users.controller';
+import { RolesController } from './roles/roles.controller';
+import { PersonasController } from './personas/personas.controller';
+import { ReemplazosController } from './reemplazos/reemplazos.controller';
+import { IntegrantesController } from './integrantes/integrantes.controller';
+import { CategoriasEspecialidadsController } from './especialidades/categorias_especialidads/categorias_especialidads.controller';
+import { AdminAuthController } from 'src/auth/admin-auth/admin-auth.controller';
+import { EspecialidadsModule } from './especialidades/especialidads/especialidads.module';
+import { EspecialidadsController } from './especialidades/especialidads/especialidads.controller';
 
 @Module({
     imports: [
@@ -25,6 +34,18 @@ import { AdminAuthModule } from 'src/auth/admin-auth/admin-auth.module';
     CategoriasEspecialidadsModule,
     AdminAuthModule
 ],
+
+controllers:[
+    UsersController,
+    RolesController,
+    PersonasController,
+    ReemplazosController,
+    EspecialidadsController,
+    IntegrantesController,
+    CategoriasEspecialidadsController,
+    AdminAuthController,
+
+]
 
 
 })

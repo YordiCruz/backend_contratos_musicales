@@ -6,6 +6,10 @@ import { CategoriasEspecialidadsModule } from './categorias_especialidads/catego
     imports:[
         EspecialidadsModule,
         CategoriasEspecialidadsModule
+    ],
+    exports:[
+        EspecialidadsModule,
+        CategoriasEspecialidadsModule
     ]
 })
 export class EspecialidadesModule {}
