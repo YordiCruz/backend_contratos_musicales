@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/admin/users/entities/user.entity';
 import { Repository } from 'typeorm';
 import { AdminLoginDto } from './dto/admin-login.dto';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AdminAuthService {
@@ -10,6 +11,10 @@ export class AdminAuthService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+
+      private readonly jwtService: JwtService,
+
+
   ){}
 
    async login(dto: AdminLoginDto) {
@@ -33,9 +38,24 @@ export class AdminAuthService {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
-    return {
 
-  message: 'Login de admin OK (falta implementar seguridad)',
+    
+
+
+    return {
+        access_token: this.generarToken(user),
+
     };
   }
+
+  private generarToken(user: User) {
+  const payload = {
+    id: user.id,
+    username: user.username,
+    roles: user.roles.map(r => r.nombre),
+  };
+
+  return this.jwtService.sign(payload);
+}
+
 }
