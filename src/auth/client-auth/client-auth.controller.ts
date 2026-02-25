@@ -1,34 +1,18 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { ClientAuthService } from './client-auth.service';
-import { CreateClientAuthDto } from './dto/create-client-auth.dto';
 import { UpdateClientAuthDto } from './dto/update-client-auth.dto';
+import { Throttle } from '@nestjs/throttler';
+import { ClientLoginDto } from './dto/client-login.dto';
 
 @Controller('client-auth')
 export class ClientAuthController {
   constructor(private readonly clientAuthService: ClientAuthService) {}
 
-  @Post()
-  create(@Body() createClientAuthDto: CreateClientAuthDto) {
-    return this.clientAuthService.create(createClientAuthDto);
+  @Post('login')
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
+  async login(@Body() dto: ClientLoginDto) {
+      return this.clientAuthService.login(dto);
   }
 
-  @Get()
-  findAll() {
-    return this.clientAuthService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.clientAuthService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateClientAuthDto: UpdateClientAuthDto) {
-    return this.clientAuthService.update(+id, updateClientAuthDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.clientAuthService.remove(+id);
-  }
+ 
 }
