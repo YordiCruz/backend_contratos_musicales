@@ -6,13 +6,26 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 import { AdminJwtStrategy } from './strategies/admin-jwt.strategy';
 import { AdminJwtGuard } from './guards/admin-jwt.guard';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User]),
+  imports: [
+    
+    ConfigModule, //necesario para jwtmodule
+    
+    TypeOrmModule.forFeature([User]),
 
-    JwtModule.register({
-      secret: process.env.JWT_ADMIN_SECRET,
-      signOptions: { expiresIn: '15m' }, // expiración corta para admins
+
+
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        
+        secret: configService.get('JWT_ADMIN_SECRET'),
+        signOptions: { expiresIn: '15m' }, // expiración corta para admins
+        
+      })
     }),
 
 
@@ -24,6 +37,10 @@ import { AdminJwtGuard } from './guards/admin-jwt.guard';
     AdminJwtGuard
 
   ],
-  exports: [AdminAuthService],
+  exports: [
+    AdminAuthService,
+    AdminJwtStrategy,
+  
+  ],
 })
 export class AdminAuthModule {}

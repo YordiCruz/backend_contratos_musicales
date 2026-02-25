@@ -58,6 +58,8 @@ export class AdminAuthService {
     user.ultimo_login = new Date();
     await this.userRepository.save(user);
 
+    console.log('SECRET ADMIN:', process.env.JWT_ADMIN_SECRET);
+
     // 8. Generar token
     return {
       access_token: this.generarToken(user),

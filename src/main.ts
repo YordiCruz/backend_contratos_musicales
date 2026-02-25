@@ -34,6 +34,7 @@ await permissionsSeeder.run();
     .setDescription('The cats API description')
     .setVersion('1.0')
     .addTag('endpoints')
+    .addBearerAuth()
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);
