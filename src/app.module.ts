@@ -7,16 +7,20 @@ import { ConfigModule } from '@nestjs/config';
 import { AdminModule } from './admin/admin.module';
 import { DatabaseModule } from './database/database.module';
 import { ClientsModule } from './client/clients/clients.module';
-
-
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
-     ConfigModule.forRoot({
+     ThrottlerModule.forRoot([{
+      ttl: 60000,
+      limit: 10,
+    }]),
+
+    ConfigModule.forRoot({
       envFilePath: '.development.env',
-      isGlobal: true
-     }),
-     TypeOrmModule.forRoot({
+      isGlobal: true,
+    }),
+    TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DB_HOST,
       port: Number(process.env.DB_PORT),
@@ -27,13 +31,12 @@ import { ClientsModule } from './client/clients/clients.module';
       synchronize: true,
     }),
 
-
-    
     AdminModule,
 
     DatabaseModule,
 
-    ClientsModule],
+    ClientsModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
