@@ -8,15 +8,17 @@ import {
   Delete,
   Query,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { FiltrosUserDto } from './dto/filtros-user.dto';
-import { RolesService } from '../roles/roles.service';
 import { CreateUserDataDto } from './dto/create-user-data.dto';
+import { AdminJwtGuard } from 'src/auth/admin-auth/guards/admin-jwt.guard';
 
+@UseGuards(AdminJwtGuard)
 @Controller('users')
 export class UsersController {
   constructor(

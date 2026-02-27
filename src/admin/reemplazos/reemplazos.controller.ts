@@ -1,11 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req, UseGuards } from '@nestjs/common';
 import { ReemplazosService } from './reemplazos.service';
 import { CreateReemplazoDto } from './dto/create-reemplazo.dto';
 import { UpdateReemplazoDto } from './dto/update-reemplazo.dto';
 import { FiltrosReemplazoDto } from './dto/filtros-reemplazo.dto';
 import { AsignarEspecialidadDto } from './dto/asignar-especialidad.dto';
 import { AsignarVariasEspecialidadesDto } from './dto/asignar-varias-especialidades.dto';
+import { AdminJwtGuard } from 'src/auth/admin-auth/guards/admin-jwt.guard';
 
+@UseGuards(AdminJwtGuard)
 @Controller('reemplazos')
 export class ReemplazosController {
   constructor(private readonly reemplazosService: ReemplazosService) {}

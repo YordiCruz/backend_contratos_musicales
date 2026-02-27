@@ -1,16 +1,18 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common';
 import { EspecialidadsService } from './especialidads.service';
 import { CreateEspecialidadDto } from './dto/create-especialidad.dto';
 import { UpdateEspecialidadDto } from './dto/update-especialidad.dto';
 import { FiltrosEspecialidadDto } from './dto/filtros-especialidad.dto';
+import { AdminJwtGuard } from 'src/auth/admin-auth/guards/admin-jwt.guard';
 
-@Controller('especialidads')
+@UseGuards(AdminJwtGuard)
+@Controller('especialidades')
 export class EspecialidadsController {
   constructor(private readonly especialidadsService: EspecialidadsService) {}
 
   @Post()
   create(@Body() createEspecialidadDto: CreateEspecialidadDto) {
-    return this.especialidadsService.create(createEspecialidadDto);
+    return this.especialidadsService.create(createEspecialidadDto); 
   }
 
   @Get()
