@@ -1,17 +1,21 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, Req } from '@nestjs/common';
 import { IntegrantesService } from './integrantes.service';
 import { CreateIntegranteDto } from './dto/create-integrante.dto';
 import { UpdateIntegranteDto } from './dto/update-integrante.dto';
 import { FiltroIntegranteDataDto } from './dto/filtro-integrante-data.dto';
 import { AsignarEspecialidadDto } from './dto/asignar-especialidad.dto';
 import { AsignarVariasEspecialidadesDto } from './dto/asignar-varias-especialidades.dto';
+import { AdminJwtGuard } from 'src/auth/admin-auth/guards/admin-jwt.guard';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiBearerAuth()
+@UseGuards(AdminJwtGuard)
 @Controller('integrantes')
 export class IntegrantesController {
   constructor(private readonly integrantesService: IntegrantesService) {}
 
   @Post()
-  create(@Query() req, @Body() createIntegranteDto: CreateIntegranteDto) {
+  create(@Req() req, @Body() createIntegranteDto: CreateIntegranteDto) {
     return this.integrantesService.create(createIntegranteDto, req.user);
   }
 

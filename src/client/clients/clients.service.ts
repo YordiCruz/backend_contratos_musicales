@@ -5,7 +5,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Persona } from 'src/admin/personas/entities/persona.entity';
 import { DataSource, Repository } from 'typeorm';
 import { Client } from './entities/client.entity';
-import { User } from 'src/admin/users/entities/user.entity';
 import { FiltroClientDto } from './dto/filtro-client.dto';
 import { ClientResponseDto } from './dto/client-response.dto';
 import { UpdateResponseDto } from './dto/update-response.dto';

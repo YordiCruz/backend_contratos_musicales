@@ -1,7 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { CategoriasEspecialidadsService } from './categorias_especialidads.service';
-import { CreateCategoriasEspecialidadDto } from './dto/create-categorias_especialidad.dto';
-import { UpdateCategoriasEspecialidadDto } from './dto/update-categorias_especialidad.dto';
 
 @Controller('categorias-especialidads')
 export class CategoriasEspecialidadsController {

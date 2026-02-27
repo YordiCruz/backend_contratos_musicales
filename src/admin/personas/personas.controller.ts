@@ -1,9 +1,11 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { CreatePersonaDto } from './dto/create-persona.dto';
 import { PersonasService } from './personas.service';
 import { UpdatePersonaDto } from './dto/update-persona.dto';
 import { FiltrosPersonaDto } from './dto/filtros-persona.dto';
+import { AdminJwtGuard } from 'src/auth/admin-auth/guards/admin-jwt.guard';
 
+@UseGuards(AdminJwtGuard)
 @Controller('personas')
 export class PersonasController {
     constructor(
