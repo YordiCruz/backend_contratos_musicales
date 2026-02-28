@@ -1,10 +1,6 @@
 import { IsBoolean, IsNotEmpty, IsOptional, IsString, IsUUID } from "class-validator";
 
 export class CreateMediaDto {
-  @IsUUID()
-  @IsString()
-  @IsNotEmpty()
-  id_evento: string;
 
   @IsString()
   tipo: string; // imagen, video
