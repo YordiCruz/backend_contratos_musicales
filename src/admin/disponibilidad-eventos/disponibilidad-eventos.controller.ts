@@ -1,34 +1,43 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Param, Post, Body } from '@nestjs/common';
 import { DisponibilidadEventosService } from './disponibilidad-eventos.service';
-import { CreateDisponibilidadEventoDto } from './dto/create-disponibilidad-evento.dto';
-import { UpdateDisponibilidadEventoDto } from './dto/update-disponibilidad-evento.dto';
 
-@Controller('disponibilidad-eventos')
+@Controller('disponibilidad')
 export class DisponibilidadEventosController {
-  constructor(private readonly disponibilidadEventosService: DisponibilidadEventosService) {}
+  constructor(private readonly disponibilidadService: DisponibilidadEventosService) {}
 
-  @Post()
-  create(@Body() createDisponibilidadEventoDto: CreateDisponibilidadEventoDto) {
-    return this.disponibilidadEventosService.create(createDisponibilidadEventoDto);
+  // Consultar disponibilidad por mes (ej: calendario)
+  @Get(':año/:mes')
+  async getDisponibilidadPorMes(
+    @Param('año') año: number,
+    @Param('mes') mes: number,
+  ) {
+    return this.disponibilidadService.getDisponibilidadPorMes(año, mes);
   }
 
-  @Get()
-  findAll() {
-    return this.disponibilidadEventosService.findAll();
+  // Consultar disponibilidad por día específico
+  @Get('dia/:fecha')
+  async getDisponibilidadPorDia(@Param('fecha') fecha: string) {
+    return this.disponibilidadService.getDisponibilidadPorDia(new Date(fecha));
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.disponibilidadEventosService.findOne(+id);
+  // Marcar slot como ocupado (cuando se confirma un contrato)
+  @Post('ocupar')
+  async ocupar(
+    @Body() data: { fecha: string; bloque: string; contratoId: string },
+  ) {
+    return this.disponibilidadService.marcarOcupado(
+      new Date(data.fecha),
+      data.bloque,
+      data.contratoId,
+    );
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateDisponibilidadEventoDto: UpdateDisponibilidadEventoDto) {
-    return this.disponibilidadEventosService.update(+id, updateDisponibilidadEventoDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.disponibilidadEventosService.remove(+id);
+  // Marcar slot como libre (cuando se cancela un contrato)
+  @Post('liberar')
+  async liberar(@Body() data: { fecha: string; bloque: string }) {
+    return this.disponibilidadService.marcarLibre(
+      new Date(data.fecha),
+      data.bloque,
+    );
   }
 }
