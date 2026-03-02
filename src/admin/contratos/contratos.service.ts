@@ -6,6 +6,7 @@ import { ContratoIntegrante } from './entities/contrato-integrante.entity';
 import { ContratoReemplazo } from './entities/contrato-reemplazo.entity';
 import { DisponibilidadEvento } from '../disponibilidad-eventos/entities/disponibilidad-evento.entity';
 import { Ubicacion } from './entities/ubicacion.entity';
+import { Integrante } from '../integrantes/entities/integrante.entity';
 
 @Injectable()
 export class ContratosService {
@@ -54,60 +55,89 @@ if (disponibilidad && disponibilidad.estado === 'ocupado') {
   }
 
   // Confirmar contrato (solo integrantes, no reemplazos)
-  async confirmarContrato(contratoId: string, integrantesData: Partial<ContratoIntegrante>[]) {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+ async confirmarContrato(contratoId: string, integrantesData: { id_integrante: string; id_especialidad: string; horas_contratadas?: number }[]) {
+  const queryRunner = this.dataSource.createQueryRunner();
+  await queryRunner.connect();
+  await queryRunner.startTransaction();
 
-    try {
-      const contrato = await queryRunner.manager.findOne(Contrato, {
-        where: { id_contrato: contratoId },
-        relations: ['ubicacion'],
-      });
-      if (!contrato) throw new NotFoundException('Contrato no encontrado');
+  try {
+    const contrato = await queryRunner.manager.findOne(Contrato, {
+      where: { id_contrato: contratoId },
+      relations: ['ubicacion'],
+    });
+    if (!contrato) throw new NotFoundException('Contrato no encontrado');
 
-      // Validar disponibilidad
-      const disponibilidad = await queryRunner.manager.findOne(DisponibilidadEvento, {
-        where: { fecha: contrato.fecha_evento, bloque: contrato.bloque },
-      });
+    // Validar disponibilidad
+    const disponibilidad = await queryRunner.manager.findOne(DisponibilidadEvento, {
+      where: { fecha: contrato.fecha_evento, bloque: contrato.bloque },
+    });
 
-      if (disponibilidad && disponibilidad.estado === 'ocupado') {
-        throw new BadRequestException('La fecha y bloque ya están ocupados');
-      }
-
-      // Marcar disponibilidad como ocupada
-      const slot = disponibilidad
-        ? disponibilidad
-        : queryRunner.manager.create(DisponibilidadEvento, {
-            fecha: contrato.fecha_evento,
-            bloque: contrato.bloque,
-          });
-      slot.estado = 'ocupado';
-      slot.contrato = contrato;
-      await queryRunner.manager.save(slot);
-
-      // Asignar integrantes
-      for (const integrante of integrantesData) {
-        const asignacion = queryRunner.manager.create(ContratoIntegrante, {
-          ...integrante,
-          id_contrato: contrato.id_contrato,
-        });
-        await queryRunner.manager.save(asignacion);
-      }
-
-      // Cambiar estado del contrato
-      contrato.estado = 'confirmado';
-      await queryRunner.manager.save(contrato);
-
-      await queryRunner.commitTransaction();
-      return contrato;
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      throw error;
-    } finally {
-      await queryRunner.release();
+    if (disponibilidad && disponibilidad.estado === 'ocupado') {
+      throw new BadRequestException('La fecha y bloque ya están ocupados');
     }
+
+    // Marcar disponibilidad como ocupada
+    const slot = disponibilidad
+      ? disponibilidad
+      : queryRunner.manager.create(DisponibilidadEvento, {
+          fecha: contrato.fecha_evento,
+          bloque: contrato.bloque,
+        });
+    slot.estado = 'ocupado';
+    slot.contrato = contrato;
+    await queryRunner.manager.save(slot);
+
+    // Asignar integrantes
+    for (const integrante of integrantesData) {
+      // Buscar el integrante en la base de datos con sus especialidades
+      const integranteEntity = await queryRunner.manager.findOne(Integrante, {
+        where: { id: integrante.id_integrante },
+        relations: ['especialidades'],
+      });
+
+      if (!integranteEntity) {
+        throw new NotFoundException('Integrante no encontrado');
+      }
+
+      // Validar que el integrante tenga la especialidad solicitada
+      const tieneEspecialidad = integranteEntity.especialidades.some(
+        e => e.id === integrante.id_especialidad,
+      );
+      if (!tieneEspecialidad) {
+        throw new BadRequestException('El integrante no tiene esa especialidad');
+      }
+
+      // Determinar horas contratadas (pueden venir del body o del contrato)
+      const horas = integrante.horas_contratadas ?? contrato.horas_contratadas;
+
+      // Calcular compensación: tarifa_base_hora * horas
+      const compensacion = Number(integranteEntity.tarifa_base_hora) * horas;
+
+      // Crear asignación con cálculo automático
+      const asignacion = queryRunner.manager.create(ContratoIntegrante, {
+        id_contrato: contrato.id_contrato,
+        id_integrante: integranteEntity.id,
+        rol: integranteEntity.especialidades.find(e => e.id === integrante.id_especialidad)?.nombre,
+        horas_contratadas: horas,
+        compensacion_hora: compensacion,
+      });
+
+      await queryRunner.manager.save(asignacion);
+    }
+
+    // Cambiar estado del contrato
+    contrato.estado = 'confirmado';
+    await queryRunner.manager.save(contrato);
+
+    await queryRunner.commitTransaction();
+    return contrato;
+  } catch (error) {
+    await queryRunner.rollbackTransaction();
+    throw error;
+  } finally {
+    await queryRunner.release();
   }
+}
 
   // Registrar reemplazo (solo si un integrante falla)
   async registrarReemplazo(data: Partial<ContratoReemplazo>) {
