@@ -21,6 +21,7 @@ import { CategoriasEspecialidadsController } from './especialidades/categorias_e
 import { AdminAuthController } from 'src/auth/admin-auth/admin-auth.controller';
 import { EspecialidadsModule } from './especialidades/especialidads/especialidads.module';
 import { EspecialidadsController } from './especialidades/especialidads/especialidads.controller';
+import { EventosModule } from './eventos/eventos.module';
 
 @Module({
     imports: [
@@ -32,7 +33,8 @@ import { EspecialidadsController } from './especialidades/especialidads/especial
     ReemplazosModule,
     IntegrantesModule,
     CategoriasEspecialidadsModule,
-    AdminAuthModule
+    AdminAuthModule,
+    EventosModule
 ],
 
 controllers:[

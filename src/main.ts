@@ -6,6 +6,10 @@ import { RolesSeeder } from './database/seeders/roles.seeder';
 import { PermissionsSeeder } from './database/seeders/permissions.seeder';
 import { EspecialidadesSeeder } from './database/seeders/especialidades.seeder';
 import { CategoriasEspecialidadSeeder } from './database/seeders/categorias-especialidad.seeder';
+import { join } from 'path';
+
+import * as express from 'express';
+
 
 async function bootstrap() {
 
@@ -26,6 +30,9 @@ await permissionsSeeder.run();
   await especialidadseeders.run();
 
 // }
+
+app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));
+
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
   

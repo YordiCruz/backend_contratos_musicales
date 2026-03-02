@@ -1,3 +1,4 @@
+import { Evento } from "src/admin/eventos/eventos/entities/evento.entity";
 import { Persona } from "src/admin/personas/entities/persona.entity";
 import { Reemplazo } from "src/admin/reemplazos/entities/reemplazo.entity";
 import { Role } from "src/admin/roles/entities/role.entity";
@@ -74,6 +75,10 @@ export class User {
 
     @OneToMany(() => Reemplazo, (reemplazo) => reemplazo.registrado_por)
     reemplazos_registrados: Reemplazo[]
+    
+    
+    @OneToMany(() => Evento, (evento) => evento.creado_por)
+    eventos_registrados: Evento[]
     
     @CreateDateColumn({ type: 'timestamp' })
     creado_en: Date;
