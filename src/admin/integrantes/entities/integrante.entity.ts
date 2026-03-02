@@ -3,6 +3,7 @@ import { Especialidad } from "src/admin/especialidades/especialidads/entities/es
 import { Persona } from "src/admin/personas/entities/persona.entity";
 import { User } from "src/admin/users/entities/user.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { IntegranteEspecialidad } from "./integrante-especialidad.entity";
 
 @Entity('group_members')
 export class Integrante {
@@ -43,18 +44,7 @@ export class Integrante {
     @DeleteDateColumn({ type: 'timestamp', nullable: true })
     eliminado_en: Date
 
-    @ManyToMany(()=> Especialidad, especialidad => especialidad.integrantes)
-    @JoinTable({
-        name: 'members_specialties',
-        joinColumn: {
-            name: 'id_integrante',
-            referencedColumnName: 'id'
-        },
-        inverseJoinColumn: {
-            name: 'id_especialidad',
-            referencedColumnName: 'id'
-        }
-    })
-    especialidades: Especialidad[]
+    @OneToMany(() => IntegranteEspecialidad, ie => ie.integrante)
+    especialidadesAsignadas: IntegranteEspecialidad[];
 
 }
