@@ -1,0 +1,56 @@
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from 'typeorm';
+import { Ubicacion } from './ubicacion.entity';
+import { Pago } from './pago.entity';
+import { Client } from 'src/client/clients/entities/client.entity';
+import { Evento } from 'src/admin/eventos/eventos/entities/evento.entity';
+
+@Entity('contratos')
+export class Contrato {
+  @PrimaryGeneratedColumn('uuid')
+  id_contrato: string;
+
+  @ManyToOne(() => Client, cliente => cliente.contratos, { eager: true })
+  cliente: Client;
+
+  @ManyToOne(() => Evento, evento => evento.contratos, { eager: true })
+  evento: Evento;
+
+  @ManyToOne(() => Ubicacion, ubicacion => ubicacion.contratos, { eager: true })
+  ubicacion: Ubicacion;
+
+  @Column({ type: 'date' })
+  fecha_evento: Date;
+
+  @Column({ type: 'varchar', length: 20 })
+  bloque: string; // mañana | noche
+
+  @Column({ type: 'time', nullable: true })
+  hora_inicio: string;
+
+  @Column({ type: 'time', nullable: true })
+  hora_fin: string;
+
+  @Column({ type: 'varchar', length: 20, nullable: true })
+  tipo_servicio: string;
+
+  @Column({ type: 'int', nullable: true })
+  horas_contratadas: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  adelanto: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  saldo: number;
+
+  @Column({ type: 'date', nullable: true })
+  fecha_adelanto: Date;
+
+  @Column({ type: 'varchar', length: 20, default: 'pendiente' })
+  estado: string;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  creado_en: Date;
+
+  @OneToMany(() => Pago, pago => pago.contrato)
+  pagos: Pago[];
+}

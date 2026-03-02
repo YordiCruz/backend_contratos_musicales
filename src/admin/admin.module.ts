@@ -22,6 +22,7 @@ import { AdminAuthController } from 'src/auth/admin-auth/admin-auth.controller';
 import { EspecialidadsModule } from './especialidades/especialidads/especialidads.module';
 import { EspecialidadsController } from './especialidades/especialidads/especialidads.controller';
 import { EventosModule } from './eventos/eventos.module';
+import { ContratosModule } from './contratos/contratos.module';
 
 @Module({
     imports: [
@@ -34,7 +35,8 @@ import { EventosModule } from './eventos/eventos.module';
     IntegrantesModule,
     CategoriasEspecialidadsModule,
     AdminAuthModule,
-    EventosModule
+    EventosModule,
+    ContratosModule
 ],
 
 controllers:[

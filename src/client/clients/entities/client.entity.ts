@@ -1,6 +1,7 @@
+import { Contrato } from "src/admin/contratos/entities/contrato.entity";
 import { Persona } from "src/admin/personas/entities/persona.entity";
 import { User } from "src/admin/users/entities/user.entity";
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity('clients')
 export class Client {
@@ -35,6 +36,11 @@ export class Client {
 
   @Column({ type: 'varchar', length: 20, nullable: true })
   preferencia_contacto: string; // whatsapp | email | telefono
+
+  
+  @OneToMany(() => Contrato, contrato => contrato.cliente)
+  contratos: Contrato[]
+
 
   @ManyToOne(() => User, { nullable: true })
   @JoinColumn({ name: 'registrado_por' })
