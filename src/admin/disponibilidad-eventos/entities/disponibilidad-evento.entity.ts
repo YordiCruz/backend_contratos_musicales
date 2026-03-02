@@ -1,3 +1,4 @@
+import { Contrato } from 'src/admin/contratos/entities/contrato.entity';
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
 
 @Entity('disponibilidad_eventos')
@@ -15,5 +16,5 @@ export class DisponibilidadEvento {
   estado: string; // libre | ocupado
 
   @ManyToOne(() => Contrato, contrato => contrato.id_contrato, { nullable: true })
-  contrato: Contrato;
+  contrato: Contrato | null;
 }

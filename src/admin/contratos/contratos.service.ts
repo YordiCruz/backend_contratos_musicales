@@ -4,7 +4,8 @@ import { Repository, DataSource } from 'typeorm';
 import { Contrato } from './entities/contrato.entity';
 import { ContratoIntegrante } from './entities/contrato-integrante.entity';
 import { ContratoReemplazo } from './entities/contrato-reemplazo.entity';
-import { DisponibilidadEvento } from '../disponibilidad/entities/disponibilidad-evento.entity';
+import { DisponibilidadEvento } from '../disponibilidad-eventos/entities/disponibilidad-evento.entity';
+import { Ubicacion } from './entities/ubicacion.entity';
 
 @Injectable()
 export class ContratosService {
@@ -13,15 +14,25 @@ export class ContratosService {
     @InjectRepository(ContratoIntegrante) private contratoIntegranteRepo: Repository<ContratoIntegrante>,
     @InjectRepository(ContratoReemplazo) private contratoReemplazoRepo: Repository<ContratoReemplazo>,
     @InjectRepository(DisponibilidadEvento) private disponibilidadRepo: Repository<DisponibilidadEvento>,
+    @InjectRepository(Ubicacion) private ubicacionRepo: Repository<Ubicacion>,
     private dataSource: DataSource,
   ) {}
 
-  // Crear contrato en estado pendiente
+  // Crear contrato en estado pendiente (con ubicación incluida)
   async createContrato(data: Partial<Contrato>) {
+    // Si el cliente envió datos de ubicación, crearla primero
+    let ubicacion: Ubicacion | null = null;
+    if (data.ubicacion) {
+      ubicacion = this.ubicacionRepo.create(data.ubicacion);
+      await this.ubicacionRepo.save(ubicacion);
+    }
+
     const contrato = this.contratoRepo.create({
       ...data,
       estado: 'pendiente',
+      ...(ubicacion ? { ubicacion } : {}) ,//solo asigna si existe
     });
+
     return this.contratoRepo.save(contrato);
   }
 
@@ -44,6 +55,7 @@ export class ContratosService {
     try {
       const contrato = await queryRunner.manager.findOne(Contrato, {
         where: { id_contrato: contratoId },
+        relations: ['ubicacion'],
       });
       if (!contrato) throw new NotFoundException('Contrato no encontrado');
 
@@ -101,7 +113,7 @@ export class ContratosService {
 
     // Validar que el integrante original estaba en el contrato
     const integranteAsignado = contrato.integrantes.find(
-      i => i.id_integrante === data.id_reemplazo, // aquí puedes ajustar la lógica según cómo quieras validar
+      i => i.id_integrante === data.id_reemplazo, // Ajusta la lógica según tu modelo
     );
     if (!integranteAsignado) {
       throw new BadRequestException('El integrante original no estaba asignado al contrato');
