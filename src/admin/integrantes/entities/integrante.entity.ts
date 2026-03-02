@@ -1,7 +1,8 @@
+import { ContratoIntegrante } from "src/admin/contratos/entities/contrato-integrante.entity";
 import { Especialidad } from "src/admin/especialidades/especialidads/entities/especialidad.entity";
 import { Persona } from "src/admin/personas/entities/persona.entity";
 import { User } from "src/admin/users/entities/user.entity";
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity('group_members')
 export class Integrante {
@@ -28,6 +29,9 @@ export class Integrante {
     @ManyToOne(() => User, { nullable: true })
     @JoinColumn({ name: 'registrado_por' })
     registrado_por: User;
+
+    @OneToMany(() => ContratoIntegrante, contratoIntegrante => contratoIntegrante.integrante)
+    contratos: ContratoIntegrante[]
 
 
     @CreateDateColumn({ type: 'timestamp' })

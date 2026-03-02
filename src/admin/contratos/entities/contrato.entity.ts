@@ -1,8 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, ManyToMany } from 'typeorm';
 import { Ubicacion } from './ubicacion.entity';
 import { Pago } from './pago.entity';
 import { Client } from 'src/client/clients/entities/client.entity';
 import { Evento } from 'src/admin/eventos/eventos/entities/evento.entity';
+import { Integrante } from 'src/admin/integrantes/entities/integrante.entity';
+import { ContratoIntegrante } from './contrato-integrante.entity';
 
 @Entity('contratos')
 export class Contrato {
@@ -14,6 +16,9 @@ export class Contrato {
 
   @ManyToOne(() => Evento, evento => evento.contratos, { eager: true })
   evento: Evento;
+
+  @OneToMany(() => ContratoIntegrante, contratoIntegrante => contratoIntegrante.contrato, { cascade: true })
+  integrantes: ContratoIntegrante[];
 
   @ManyToOne(() => Ubicacion, ubicacion => ubicacion.contratos, { eager: true })
   ubicacion: Ubicacion;
