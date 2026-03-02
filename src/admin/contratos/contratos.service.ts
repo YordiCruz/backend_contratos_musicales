@@ -1,26 +1,114 @@
-import { Injectable } from '@nestjs/common';
-import { CreateContratoDto } from './dto/create-contrato.dto';
-import { UpdateContratoDto } from './dto/update-contrato.dto';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, DataSource } from 'typeorm';
+import { Contrato } from './entities/contrato.entity';
+import { ContratoIntegrante } from './entities/contrato-integrante.entity';
+import { ContratoReemplazo } from './entities/contrato-reemplazo.entity';
+import { DisponibilidadEvento } from '../disponibilidad/entities/disponibilidad-evento.entity';
 
 @Injectable()
 export class ContratosService {
-  create(createContratoDto: CreateContratoDto) {
-    return 'This action adds a new contrato';
+  constructor(
+    @InjectRepository(Contrato) private contratoRepo: Repository<Contrato>,
+    @InjectRepository(ContratoIntegrante) private contratoIntegranteRepo: Repository<ContratoIntegrante>,
+    @InjectRepository(ContratoReemplazo) private contratoReemplazoRepo: Repository<ContratoReemplazo>,
+    @InjectRepository(DisponibilidadEvento) private disponibilidadRepo: Repository<DisponibilidadEvento>,
+    private dataSource: DataSource,
+  ) {}
+
+  // Crear contrato en estado pendiente
+  async createContrato(data: Partial<Contrato>) {
+    const contrato = this.contratoRepo.create({
+      ...data,
+      estado: 'pendiente',
+    });
+    return this.contratoRepo.save(contrato);
   }
 
-  findAll() {
-    return `This action returns all contratos`;
+  // Obtener contrato con todas sus relaciones
+  async getContrato(id: string) {
+    const contrato = await this.contratoRepo.findOne({
+      where: { id_contrato: id },
+      relations: ['cliente', 'evento', 'ubicacion', 'integrantes', 'reemplazos', 'pagos'],
+    });
+    if (!contrato) throw new NotFoundException('Contrato no encontrado');
+    return contrato;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} contrato`;
+  // Confirmar contrato (solo integrantes, no reemplazos)
+  async confirmarContrato(contratoId: string, integrantesData: Partial<ContratoIntegrante>[]) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const contrato = await queryRunner.manager.findOne(Contrato, {
+        where: { id_contrato: contratoId },
+      });
+      if (!contrato) throw new NotFoundException('Contrato no encontrado');
+
+      // Validar disponibilidad
+      const disponibilidad = await queryRunner.manager.findOne(DisponibilidadEvento, {
+        where: { fecha: contrato.fecha_evento, bloque: contrato.bloque },
+      });
+
+      if (disponibilidad && disponibilidad.estado === 'ocupado') {
+        throw new BadRequestException('La fecha y bloque ya están ocupados');
+      }
+
+      // Marcar disponibilidad como ocupada
+      const slot = disponibilidad
+        ? disponibilidad
+        : queryRunner.manager.create(DisponibilidadEvento, {
+            fecha: contrato.fecha_evento,
+            bloque: contrato.bloque,
+          });
+      slot.estado = 'ocupado';
+      slot.contrato = contrato;
+      await queryRunner.manager.save(slot);
+
+      // Asignar integrantes
+      for (const integrante of integrantesData) {
+        const asignacion = queryRunner.manager.create(ContratoIntegrante, {
+          ...integrante,
+          id_contrato: contrato.id_contrato,
+        });
+        await queryRunner.manager.save(asignacion);
+      }
+
+      // Cambiar estado del contrato
+      contrato.estado = 'confirmado';
+      await queryRunner.manager.save(contrato);
+
+      await queryRunner.commitTransaction();
+      return contrato;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
-  update(id: number, updateContratoDto: UpdateContratoDto) {
-    return `This action updates a #${id} contrato`;
-  }
+  // Registrar reemplazo (solo si un integrante falla)
+  async registrarReemplazo(data: Partial<ContratoReemplazo>) {
+    // Validar que el contrato existe
+    const contrato = await this.contratoRepo.findOne({
+      where: { id_contrato: data.id_contrato },
+      relations: ['integrantes'],
+    });
+    if (!contrato) throw new NotFoundException('Contrato no encontrado');
 
-  remove(id: number) {
-    return `This action removes a #${id} contrato`;
+    // Validar que el integrante original estaba en el contrato
+    const integranteAsignado = contrato.integrantes.find(
+      i => i.id_integrante === data.id_reemplazo, // aquí puedes ajustar la lógica según cómo quieras validar
+    );
+    if (!integranteAsignado) {
+      throw new BadRequestException('El integrante original no estaba asignado al contrato');
+    }
+
+    // Registrar reemplazo
+    const reemplazo = this.contratoReemplazoRepo.create(data);
+    return this.contratoReemplazoRepo.save(reemplazo);
   }
 }
