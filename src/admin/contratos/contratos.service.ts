@@ -20,6 +20,13 @@ export class ContratosService {
 
   // Crear contrato en estado pendiente (con ubicación incluida)
   async createContrato(data: Partial<Contrato>) {
+    const disponibilidad = await this.disponibilidadRepo.findOne({
+  where: { fecha: data.fecha_evento, bloque: data.bloque },
+});
+if (disponibilidad && disponibilidad.estado === 'ocupado') {
+  throw new BadRequestException('La fecha y bloque ya están ocupados');
+}
+
     // Si el cliente envió datos de ubicación, crearla primero
     let ubicacion: Ubicacion | null = null;
     if (data.ubicacion) {
@@ -123,4 +130,23 @@ export class ContratosService {
     const reemplazo = this.contratoReemplazoRepo.create(data);
     return this.contratoReemplazoRepo.save(reemplazo);
   }
+
+  // Actualizar contrato
+async updateContrato(id: string, data: Partial<Contrato>) {
+  const contrato = await this.contratoRepo.findOne({ where: { id_contrato: id } });
+  if (!contrato) throw new NotFoundException('Contrato no encontrado');
+
+  Object.assign(contrato, data);
+  return this.contratoRepo.save(contrato);
+}
+
+// Eliminar contrato
+async removeContrato(id: string) {
+  const contrato = await this.contratoRepo.findOne({ where: { id_contrato: id } });
+  if (!contrato) throw new NotFoundException('Contrato no encontrado');
+
+  return this.contratoRepo.remove(contrato);
+}
+
+
 }

@@ -7,10 +7,12 @@ import { DisponibilidadEvento } from '../disponibilidad-eventos/entities/disponi
 import { ContratoIntegrante } from './entities/contrato-integrante.entity';
 import { ContratoReemplazo } from './entities/contrato-reemplazo.entity';
 import { Ubicacion } from './entities/ubicacion.entity';
+import { UbicacionService } from './ubicacion.service';
+import { UbicacionController } from './ubicacion.controller';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Contrato, DisponibilidadEvento, ContratoIntegrante, ContratoReemplazo, Ubicacion])],
-  controllers: [ContratosController],
-  providers: [ContratosService],
+  controllers: [ContratosController, UbicacionController],
+  providers: [ContratosService, UbicacionService, UbicacionController],
 })
 export class ContratosModule {}
