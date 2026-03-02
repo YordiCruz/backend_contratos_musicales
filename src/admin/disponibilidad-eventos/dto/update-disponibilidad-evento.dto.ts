@@ -1,4 +1,11 @@
-import { PartialType } from '@nestjs/swagger';
-import { CreateDisponibilidadEventoDto } from './create-disponibilidad-evento.dto';
+import { IsString, IsOptional, IsUUID } from 'class-validator';
 
-export class UpdateDisponibilidadEventoDto extends PartialType(CreateDisponibilidadEventoDto) {}
+export class UpdateDisponibilidadEventoDto {
+  @IsOptional()
+  @IsString()
+  estado?: string; // libre | ocupado
+
+  @IsOptional()
+  @IsUUID()
+  id_contrato?: string;
+}
