@@ -5,6 +5,7 @@ import { Client } from 'src/client/clients/entities/client.entity';
 import { Evento } from 'src/admin/eventos/eventos/entities/evento.entity';
 import { Integrante } from 'src/admin/integrantes/entities/integrante.entity';
 import { ContratoIntegrante } from './contrato-integrante.entity';
+import { ContratoReemplazo } from './contrato-reemplazo.entity';
 
 @Entity('contratos')
 export class Contrato {
@@ -19,6 +20,9 @@ export class Contrato {
 
   @OneToMany(() => ContratoIntegrante, contratoIntegrante => contratoIntegrante.contrato, { cascade: true })
   integrantes: ContratoIntegrante[];
+
+  @OneToMany(() => ContratoReemplazo, contratoReemplazo => contratoReemplazo.contrato, { cascade: true })
+  reemplazos: ContratoReemplazo[];
 
   @ManyToOne(() => Ubicacion, ubicacion => ubicacion.contratos, { eager: true })
   ubicacion: Ubicacion;
