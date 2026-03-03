@@ -8,13 +8,14 @@ export class IntegranteEspecialidad {
   id: string;
 
   @ManyToOne(() => Integrante, integrante => integrante.especialidadesAsignadas)
-  @JoinColumn({ name: 'id' })
+  @JoinColumn({ name: 'id_integrante' })
   integrante: Integrante;
 
   @ManyToOne(() => Especialidad, especialidad => especialidad.integrantesAsignados)
-  @JoinColumn({ name: 'id' })
+  @JoinColumn({ name: 'id_especialidad' })
   especialidad: Especialidad;
 
   @Column({ type: 'varchar', length: 20, default: 'primaria' })
+ 
   tipo: string; // primaria | secundaria
 }

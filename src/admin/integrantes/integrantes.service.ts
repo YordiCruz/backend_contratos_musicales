@@ -12,6 +12,7 @@ import { CreateIntegranteDataDto } from './dto/create-integrante-data.dto';
 import { AsignarEspecialidadDto } from './dto/asignar-especialidad.dto';
 import { Especialidad } from '../especialidades/especialidads/entities/especialidad.entity';
 import { AsignarVariasEspecialidadesDto } from './dto/asignar-varias-especialidades.dto';
+import { IntegranteEspecialidad } from './entities/integrante-especialidad.entity';
 
 @Injectable()
 export class IntegrantesService {
@@ -234,63 +235,102 @@ async createIntegranteFromExistingPersona(idPersona: string, dto: CreateIntegran
 }
 
 async asignarEspecialidad(id: string, dto: AsignarEspecialidadDto) {
+  // Buscar al integrante con sus especialidades asignadas
   const integrante = await this.integranterepo.findOne({
     where: { id },
-    relations: ['especialidades'],
+    relations: ['especialidadesAsignadas', 'especialidadesAsignadas.especialidad'],
   });
 
   if (!integrante) throw new NotFoundException('Integrante no encontrado');
 
+  // Buscar la especialidad
   const especialidad = await this.especialidadrepo.findOne({
     where: { id: dto.id_especialidad },
   });
 
   if (!especialidad) throw new NotFoundException('Especialidad no encontrada');
 
-  const yaExiste = integrante.especialidades.some(
-    e => e.id === dto.id_especialidad,
+  // Validar si ya existe la relación
+  const yaExiste = integrante.especialidadesAsignadas.some(
+    ie => ie.especialidad.id === dto.id_especialidad,
   );
 
   if (yaExiste) {
     throw new ConflictException('El integrante ya tiene esta especialidad');
   }
 
-  integrante.especialidades.push(especialidad);
-   await this.integranterepo.save(integrante);
-  return {
-    message: `Se añadio correctamente la especialidad del integrante`,
-  }
+  const yaTienePrimaria = integrante.especialidadesAsignadas.some(
+    ie => ie.tipo === 'primario',
+  );
 
+
+  // Decidir el tipo: usar el que manda el frontend o calcular automáticamente
+  const tipo = dto.tipo
+    ? dto.tipo
+    : (yaTienePrimaria ? 'secundario' : 'primario');
+
+  // Crear la relación intermedia
+  const nuevaRelacion = this.dataSource.getRepository(IntegranteEspecialidad).create({
+    integrante,
+    especialidad,
+    tipo,
+  });
+
+
+  await this.dataSource.getRepository(IntegranteEspecialidad).save(nuevaRelacion);
+
+  return {
+    message: `Se añadió correctamente la especialidad (${especialidad.nombre}) al integrante`,
+    tipo: nuevaRelacion.tipo,
+  };
 }
 
-
 async asignarMultiplesEspecialidades(id: string, dto: AsignarVariasEspecialidadesDto) {
+  // Buscar al integrante con sus especialidades asignadas
   const integrante = await this.integranterepo.findOne({
     where: { id },
-    relations: ['especialidades'],
+    relations: ['especialidadesAsignadas', 'especialidadesAsignadas.especialidad'],
   });
 
   if (!integrante) {
     throw new NotFoundException('Integrante no encontrado');
   }
 
-  const especialidades = await this.especialidadrepo.findByIds(dto.ids_especialidades);
+  // Buscar todas las especialidades solicitadas
+  const especialidades = await this.especialidadrepo.findByIds(dto.especialidades.map(e => e.id_especialidad));
 
-  if (especialidades.length !== dto.ids_especialidades.length) {
+  if (especialidades.length !== dto.especialidades.length) {
     throw new NotFoundException('Una o más especialidades no existen');
   }
 
-  const idsActuales = new Set(integrante.especialidades.map(e => e.id));
+  // Obtener las especialidades actuales del integrante
+  const idsActuales = new Set(
+    integrante.especialidadesAsignadas.map(ie => ie.especialidad.id),
+  );
 
+  // Filtrar las nuevas especialidades que aún no están asignadas
   const nuevas = especialidades.filter(e => !idsActuales.has(e.id));
 
   if (nuevas.length === 0) {
     return { message: 'Todas las especialidades ya estaban asignadas' };
   }
 
-  integrante.especialidades.push(...nuevas);
+  // Verificar si ya existe una primaria
+  const yaTienePrimaria = integrante.especialidadesAsignadas.some(
+    ie => ie.tipo === 'primario',
+  );
 
-  await this.integranterepo.save(integrante);
+  // Crear las relaciones intermedias para las nuevas especialidades
+  const repoIE = this.dataSource.getRepository(IntegranteEspecialidad);
+
+  for (let i = 0; i < nuevas.length; i++) {
+    const relacion = repoIE.create({
+      integrante,
+      especialidad: nuevas[i],
+      tipo: !yaTienePrimaria && i === 0 ? 'primario' : 'secundario',
+    });
+    await repoIE.save(relacion);
+  }
 
   return {
     message: 'Especialidades asignadas correctamente',
@@ -301,49 +341,53 @@ async asignarMultiplesEspecialidades(id: string, dto: AsignarVariasEspecialidade
 
 
 async eliminarEspecialidad(id: string, id_especialidad: string) {
+  // Buscar al integrante con sus especialidades asignadas
   const integrante = await this.integranterepo.findOne({
     where: { id },
-    relations: ['especialidades'],
+    relations: ['especialidadesAsignadas', 'especialidadesAsignadas.especialidad'],
   });
 
   if (!integrante) {
     throw new NotFoundException('Integrante no encontrado');
   }
 
-  const tieneEspecialidad = integrante.especialidades.find(
-    e => e.id === id_especialidad,
+  // Buscar la relación intermedia
+  const relacion = integrante.especialidadesAsignadas.find(
+    ie => ie.especialidad.id === id_especialidad,
   );
 
-  if (!tieneEspecialidad) {
+  if (!relacion) {
     throw new NotFoundException('El integrante no tiene esta especialidad');
   }
 
-  const nombreespecialidad = tieneEspecialidad.nombre
+  const nombreEspecialidad = relacion.especialidad.nombre;
 
-  integrante.especialidades = integrante.especialidades.filter(
-    e => e.id !== id_especialidad,
-  );
-
-  await this.integranterepo.save(integrante);
+  // Eliminar la relación intermedia
+  await this.dataSource.getRepository(IntegranteEspecialidad).remove(relacion);
 
   return {
-    message: `Se quito correctamente la especialidad: ${nombreespecialidad} del integrante`,
-    
+    message: `Se quitó correctamente la especialidad: ${nombreEspecialidad} del integrante`,
   };
 }
 
 
 async listaEspecialidades(id: string) {
+  // Buscar al integrante con sus especialidades asignadas
   const integrante = await this.integranterepo.findOne({
     where: { id },
-    relations: ['especialidades'],
+    relations: ['especialidadesAsignadas', 'especialidadesAsignadas.especialidad'],
   });
 
   if (!integrante) {
     throw new NotFoundException('Integrante no encontrado');
   }
 
-  return integrante.especialidades;
+  // Mapear las especialidades con su tipo (primaria/secundaria)
+  return integrante.especialidadesAsignadas.map(ie => ({
+    id: ie.especialidad.id,
+    nombre: ie.especialidad.nombre,
+    tipo: ie.tipo, // primaria | secundaria
+  }));
 }
 
 }

@@ -3,6 +3,7 @@ import { ContratosService } from './contratos.service';
 import { CreateContratoDto } from './dto/create-contrato.dto';
 import { UpdateContratoDto } from './dto/update-contrato.dto';
 import { ContratoIntegrante } from './entities/contrato-integrante.entity';
+import { ConfirmarContratoDto } from './dto/confirmar-contrato.dto';
 
 @Controller('contratos')
 export class ContratosController {
@@ -24,7 +25,7 @@ export class ContratosController {
   @Patch(':id/confirmar')
   confirmar(
     @Param('id') id: string,
-    @Body() integrantesData: Partial<ContratoIntegrante>[],
+    @Body() integrantesData: ConfirmarContratoDto[],
   ) {
     return this.contratosService.confirmarContrato(id, integrantesData);
   }

@@ -100,7 +100,7 @@ if (disponibilidad && disponibilidad.estado === 'ocupado') {
       }
 
       // Validar que el integrante tenga la especialidad solicitada
-      const tieneEspecialidad = integranteEntity.especialidades.some(
+      const tieneEspecialidad = integranteEntity.especialidadesAsignadas.some(
         e => e.id === integrante.id_especialidad,
       );
       if (!tieneEspecialidad) {
@@ -117,7 +117,7 @@ if (disponibilidad && disponibilidad.estado === 'ocupado') {
       const asignacion = queryRunner.manager.create(ContratoIntegrante, {
         id_contrato: contrato.id_contrato,
         id_integrante: integranteEntity.id,
-        rol: integranteEntity.especialidades.find(e => e.id === integrante.id_especialidad)?.nombre,
+        rol: integranteEntity.especialidadesAsignadas.find(e => e.id === integrante.id_especialidad)?.especialidad.nombre,
         horas_contratadas: horas,
         compensacion_hora: compensacion,
       });

@@ -8,11 +8,11 @@ export class ReemplazoEspecialidad {
   id: string;
 
   @ManyToOne(() => Reemplazo, reemplazo => reemplazo.especialidadesAsignadas)
-  @JoinColumn({ name: 'id' })
+  @JoinColumn({ name: 'id_reemplazo' })
   reemplazo: Reemplazo;
 
   @ManyToOne(() => Especialidad, especialidad => especialidad.integrantesAsignados)
-  @JoinColumn({ name: 'id' })
+  @JoinColumn({ name: 'id_especialidad' })
   especialidad: Especialidad;
 
   @Column({ type: 'varchar', length: 20, default: 'primaria' })
