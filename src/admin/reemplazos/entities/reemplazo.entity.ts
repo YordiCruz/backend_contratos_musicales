@@ -24,9 +24,8 @@ export class Reemplazo {
     @Column({ type: 'varchar', nullable: false, default: 'activo' })
     estado: string
 
-    @Column({ type: 'boolean', nullable: false, default: true })
-    disponible: boolean
-
+    @Column({ type: 'boolean', default: true })
+    disponible: boolean;
     @OneToMany(() => ContratoReemplazo, contratoReemplazo => contratoReemplazo.reemplazo)
     contratos: ContratoReemplazo[]
 

@@ -343,10 +343,13 @@ async asignarMultiplesEspecialidades(id: string, dto: AsignarVariasEspecialidade
     await repoRE.save(relacion);
   }
 
-  return {
-    message: 'Especialidades asignadas correctamente',
-    asignadas: nuevas.map(e => e.id_especialidad),
-  };
+ return {
+  message: 'Especialidades asignadas correctamente',
+  asignadas: nuevas.map(e => {
+    const esp = especialidades.find(es => es.id === e.id_especialidad);
+    return esp?.nombre;
+  }),
+};
 }
   
 async eliminarEspecialidad(id: string, id_especialidad: string) {

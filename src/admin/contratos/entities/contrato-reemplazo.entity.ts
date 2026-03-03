@@ -15,11 +15,14 @@ export class ContratoReemplazo {
   contrato: Contrato;
 
   @ManyToOne(() => Reemplazo, reempla => reempla.contratos, { eager: true })
-  @JoinColumn({ name: 'id' })
+  @JoinColumn({ name: 'id_reemplazo' })
   reemplazo: Reemplazo;
 
   @Column({ type: 'varchar', length: 50 })
-  rol: string;
+  especialidad: string;
+
+  @Column({ type: 'varchar', length: 20, default: 'pendiente' })
+  estado: string; // pendiente | aceptado | rechazado
 
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   compensacion_hora: number;

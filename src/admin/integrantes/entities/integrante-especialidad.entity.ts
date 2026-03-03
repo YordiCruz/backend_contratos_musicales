@@ -15,7 +15,6 @@ export class IntegranteEspecialidad {
   @JoinColumn({ name: 'id_especialidad' })
   especialidad: Especialidad;
 
-  @Column({ type: 'varchar', length: 20, default: 'primaria' })
- 
+  @Column({ type: 'varchar', length: 20, default: 'primario' })
   tipo: string; // primaria | secundaria
 }

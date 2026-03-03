@@ -14,18 +14,22 @@ export class ContratoIntegrante {
   @JoinColumn({ name: 'id_contrato' })
   contrato: Contrato;
 
-  @ManyToOne(() => Integrante, integrante => integrante.contratos, { eager: true })
-  @JoinColumn({ name: 'id' })
+  @ManyToOne(() => Integrante, integrante => integrante.contratos)
+  @JoinColumn({ name: 'id_integrante' })
   integrante: Integrante;
 
   @Column({ type: 'varchar', length: 50 })
-  rol: string;
+  especialidad: string;
 
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   compensacion_hora: number;
 
   @Column({ type: 'int' })
   horas_contratadas: number;
+
+  @Column({ type: 'varchar', length: 20, default: 'pendiente' })
+  estado: string; // pendiente | aceptado | rechazado
+
 
   @CreateDateColumn({type: 'timestamp'})
   creado_en: Date

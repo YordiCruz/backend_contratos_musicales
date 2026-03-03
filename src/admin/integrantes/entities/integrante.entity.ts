@@ -10,8 +10,12 @@ export class Integrante {
 
     @PrimaryGeneratedColumn('uuid')
     id: string
+    
+    @Column({ type: 'uuid' })
+id_persona: string;
 
-   @OneToOne(() => Persona)
+
+   @OneToOne(() => Persona, persona => persona.integrante)
    @JoinColumn({ name: 'id_persona' })
    persona: Persona; 
 

@@ -6,6 +6,7 @@ import { Evento } from 'src/admin/eventos/eventos/entities/evento.entity';
 import { Integrante } from 'src/admin/integrantes/entities/integrante.entity';
 import { ContratoIntegrante } from './contrato-integrante.entity';
 import { ContratoReemplazo } from './contrato-reemplazo.entity';
+import { ContratoEspecialidad } from './contrato-especialidad.entity';
 
 @Entity('contratos')
 export class Contrato {
@@ -51,15 +52,25 @@ export class Contrato {
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
   saldo: number;
 
+  @Column({ type: 'boolean', default: 'false' })
+  admin_aprobacion: boolean;
+
   @Column({ type: 'date', nullable: true })
   fecha_adelanto: Date;
 
   @Column({ type: 'varchar', length: 20, default: 'pendiente' })
   estado: string;
 
+  @Column({ type: 'varchar', length: 100, nullable: true})
+  motivo_cancelacion:string
+
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   creado_en: Date;
 
   @OneToMany(() => Pago, pago => pago.contrato)
   pagos: Pago[];
+
+  @OneToMany(() => ContratoEspecialidad, ce => ce.contrato, { cascade: true })
+  especialidades: ContratoEspecialidad[];
+
 }
