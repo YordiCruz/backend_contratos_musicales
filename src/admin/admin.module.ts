@@ -24,6 +24,8 @@ import { EspecialidadsController } from './especialidades/especialidads/especial
 import { EventosModule } from './eventos/eventos.module';
 import { DisponibilidadModule } from './disponibilidad/disponibilidad.module';
 import { DisponibilidadEventosModule } from './disponibilidad-eventos/disponibilidad-eventos.module';
+import { NotificacionesModule } from './notificaciones/notificaciones.module';
+import { EmailModule } from './email/email.module';
 
 @Module({
     imports: [
@@ -38,7 +40,9 @@ import { DisponibilidadEventosModule } from './disponibilidad-eventos/disponibil
     AdminAuthModule,
     EventosModule,
     DisponibilidadModule,
-    DisponibilidadEventosModule
+    DisponibilidadEventosModule,
+    NotificacionesModule,
+    EmailModule
 ],
 
 controllers:[
