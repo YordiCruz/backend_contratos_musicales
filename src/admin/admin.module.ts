@@ -22,7 +22,14 @@ import { AdminAuthController } from 'src/auth/admin-auth/admin-auth.controller';
 import { EspecialidadsModule } from './especialidades/especialidads/especialidads.module';
 import { EspecialidadsController } from './especialidades/especialidads/especialidads.controller';
 import { EventosModule } from './eventos/eventos.module';
+<<<<<<< HEAD
 import { ContratosModule } from './contratos/contratos.module';
+=======
+import { DisponibilidadModule } from './disponibilidad/disponibilidad.module';
+import { DisponibilidadEventosModule } from './disponibilidad-eventos/disponibilidad-eventos.module';
+import { NotificacionesModule } from './notificaciones/notificaciones.module';
+import { EmailModule } from './email/email.module';
+>>>>>>> develop
 
 @Module({
     imports: [
@@ -36,7 +43,14 @@ import { ContratosModule } from './contratos/contratos.module';
     CategoriasEspecialidadsModule,
     AdminAuthModule,
     EventosModule,
+<<<<<<< HEAD
     ContratosModule
+=======
+    DisponibilidadModule,
+    DisponibilidadEventosModule,
+    NotificacionesModule,
+    EmailModule
+>>>>>>> develop
 ],
 
 controllers:[
