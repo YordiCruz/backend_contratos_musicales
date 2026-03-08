@@ -1,42 +1,34 @@
-import { Controller, Post, Body, Param } from '@nestjs/common';
-import { TipoNotificacion, NotificacionDTO } from './dto/notificacion.dto';
+import { Controller, Post, Param, Body } from '@nestjs/common';
 import { NotificacionesService } from './notificaciones.service';
 import { PersonasService } from '../personas/personas.service';
+import { ContratosService } from '../contratos/contratos.service';
+import { CreateNotificacioneDto, TipoNotificacion } from './dto/create-notificacione.dto';
+import { SugerenciaDTO } from '../contratos/dto/resumen-contrato.dto';
 
 @Controller('notificaciones')
 export class NotificacionesController {
   constructor(
     private readonly notificacionService: NotificacionesService,
-    private readonly contratoService: ContratoService,
+    private readonly contratoService: ContratosService,
     private readonly personaService: PersonasService,
   ) {}
 
-  @Post(':contratoId/integrante/:personaId')
-  async notificarIntegrante(
-    @Param('contratoId') contratoId: string,
-    @Param('personaId') personaId: string,
-  ) {
-    const contrato = await this.contratoService.findById(contratoId);
-    const persona = await this.personaService.findOne(personaId);
 
-    const dto: NotificacionDTO = await this.notificacionService.generarNotificacion(
-      TipoNotificacion.INTEGRANTE,
-      contrato,
-      persona,
-    );
+@Post('contratos/:contratoId/notificar-reemplazos')
+async notificarReemplazos(@Param('contratoId') contratoId: string) {
+  return this.notificacionService.notificaReemplazos(contratoId);
+}
 
-    return this.notificacionService.enviar(dto);
-  }
 
   @Post(':contratoId/reemplazo/:personaId')
   async notificarReemplazo(
     @Param('contratoId') contratoId: string,
     @Param('personaId') personaId: string,
   ) {
-    const contrato = await this.contratoService.findById(contratoId);
+    const contrato = await this.contratoService.getContrato(contratoId);
     const persona = await this.personaService.findOne(personaId);
 
-    const dto: NotificacionDTO = await this.notificacionService.generarNotificacion(
+    const dto: CreateNotificacioneDto = await this.notificacionService.generarNotificacion(
       TipoNotificacion.REEMPLAZO,
       contrato,
       persona,
@@ -50,10 +42,10 @@ export class NotificacionesController {
     @Param('contratoId') contratoId: string,
     @Param('personaId') personaId: string,
   ) {
-    const contrato = await this.contratoService.findById(contratoId);
+    const contrato = await this.contratoService.getContrato(contratoId);
     const persona = await this.personaService.findOne(personaId);
 
-    const dto: NotificacionDTO = await this.notificacionService.generarNotificacion(
+    const dto: CreateNotificacioneDto = await this.notificacionService.generarNotificacion(
       TipoNotificacion.CLIENTE,
       contrato,
       persona,
@@ -67,10 +59,10 @@ export class NotificacionesController {
     @Param('contratoId') contratoId: string,
     @Param('personaId') personaId: string,
   ) {
-    const contrato = await this.contratoService.findById(contratoId);
+    const contrato = await this.contratoService.getContrato(contratoId);
     const persona = await this.personaService.findOne(personaId);
 
-    const dto: NotificacionDTO = await this.notificacionService.generarNotificacion(
+    const dto: CreateNotificacioneDto = await this.notificacionService.generarNotificacion(
       TipoNotificacion.ADMIN,
       contrato,
       persona,

@@ -1,5 +1,6 @@
+import { Contrato } from "src/admin/contratos/entities/contrato.entity";
 import { Persona } from "src/admin/personas/entities/persona.entity";
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity('notificaciones')
 export class Notificacione {
@@ -16,17 +17,17 @@ export class Notificacione {
   @CreateDateColumn({ type: 'timestamp' })
   fecha: Date;
 
-  @Column()
-  personaId: string;
-
-  @Column()
-  contratoId: string;
-
-  @ManyToOne(() => Persona)
+  @ManyToOne(() => Persona, { eager: true })
+  @JoinColumn({ name: 'persona_id' })
   persona: Persona;
 
-  @ManyToOne(() => Contrato)
+  @ManyToOne(() => Contrato, { eager: true })
+  @JoinColumn({ name: 'contrato_id' })
   contrato: Contrato;
+
+  @Column({ default: 'pendiente' })
+  estado: 'pendiente' | 'aceptado' | 'rechazado';
+
 
 
 }

@@ -2,6 +2,8 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  forwardRef,
+  Inject,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
@@ -17,85 +19,144 @@ import { CreateContratoDto } from './dto/create-contrato.dto';
 import { Reemplazo } from '../reemplazos/entities/reemplazo.entity';
 import { Pago } from './entities/pago.entity';
 import { TipoServicioEspecialidad } from './entities/tipo-servicio-especialidad.entity';
-import { ReemplazoEspecialidad } from '../reemplazos/entities/reemplazo-especialidad.entity';
-import { AsignarIntegranteDto, AsignarIntegrantesDto } from './dto/asignar-integrante.dto';
+import { AsignarIntegranteDto } from './dto/asignar-integrante.dto';
+import { Persona } from '../personas/entities/persona.entity';
+import { User } from '../users/entities/user.entity';
+import { CreateNotificacioneDto, TipoNotificacion } from '../notificaciones/dto/create-notificacione.dto';
+import { NotificacionesService } from '../notificaciones/notificaciones.service';
+import { InvitacionDTO, ResumenContratoDTO, SugerenciaDTO } from './dto/resumen-contrato.dto';
+import { Notificacione } from '../notificaciones/entities/notificacione.entity';
 
 @Injectable()
 export class ContratosService {
   constructor(
-    @InjectRepository(Contrato) private contratoRepo: Repository<Contrato>,
+    @InjectRepository(Contrato) 
+    private contratoRepo: Repository<Contrato>,
+
+        
+    @InjectRepository(TipoServicioEspecialidad)
+    private readonly tipoServicioEspecialidadRepo: Repository<TipoServicioEspecialidad>,
+
+    @InjectRepository(Integrante)
+    private readonly integranteRepo: Repository<Integrante>,
+    
     @InjectRepository(ContratoIntegrante)
     private contratoIntegranteRepo: Repository<ContratoIntegrante>,
+    
     @InjectRepository(ContratoReemplazo)
     private contratoReemplazoRepo: Repository<ContratoReemplazo>,
+    
     @InjectRepository(DisponibilidadEvento)
     private disponibilidadRepo: Repository<DisponibilidadEvento>,
+
+    @InjectRepository(Persona)
+    private personaRepo: Repository<Persona>,
+
+    @InjectRepository(Notificacione)
+    private notificacioneRepo: Repository<Notificacione>,
+
+    @InjectRepository(Reemplazo)
+    private reemplazoRepo: Repository<Reemplazo>,
+
+    @InjectRepository(User)
+    private userRepo: Repository<User>,
+
+    @Inject(forwardRef(() => NotificacionesService))
+    private readonly notificacionesService: NotificacionesService,
+    
     @InjectRepository(Ubicacion) private ubicacionRepo: Repository<Ubicacion>,
     private dataSource: DataSource,
   ) {}
 
   // Crear contrato en estado pendiente (con ubicación incluida)
-  async createContrato(data: CreateContratoDto) {
-    // Validar disponibilidad
-    const disponibilidad = await this.disponibilidadRepo.findOne({
-      where: { fecha: data.fecha_evento, bloque: data.bloque },
-    });
-    if (disponibilidad && disponibilidad.estado === 'ocupado') {
-      throw new BadRequestException('La fecha y bloque ya están ocupados');
-    }
-
-    // Buscar entidades relacionadas
-    const cliente = await this.dataSource
-      .getRepository(Client)
-      .findOne({ where: { id: data.id_cliente } });
-    if (!cliente) throw new NotFoundException('Cliente no encontrado');
-
-    const evento = await this.dataSource
-      .getRepository(Evento)
-      .findOne({ where: { id_evento: data.id_evento } });
-    if (!evento) throw new NotFoundException('Evento no encontrado');
-
-    const ubicacion = await this.ubicacionRepo.findOne({
-      where: { id_ubicacion: data.id_ubicacion },
-    });
-    if (!ubicacion) throw new NotFoundException('Ubicación no encontrada');
-
-    // Crear contrato con relaciones
-    const contrato = this.contratoRepo.create({
-      cliente,
-      evento,
-      ubicacion,
-      fecha_evento: data.fecha_evento,
-      bloque: data.bloque,
-      hora_inicio: data.hora_inicio,
-      hora_fin: data.hora_fin,
-      tipo_servicio: data.tipo_servicio,
-      horas_contratadas: data.horas_contratadas,
-      adelanto: data.adelanto,
-      saldo: data.saldo,
-      fecha_adelanto: data.fecha_adelanto,
-      estado: 'pendiente',
-    });
-
-    return this.contratoRepo.save(contrato);
+async createContrato(data: CreateContratoDto) {
+  // 1. Validar disponibilidad
+  const disponibilidad = await this.disponibilidadRepo.findOne({
+    where: { fecha: data.fecha_evento, bloque: data.bloque },
+  });
+  if (disponibilidad && disponibilidad.estado === 'ocupado') {
+    throw new BadRequestException('La fecha y bloque ya están ocupados');
   }
+
+  // 2. Buscar entidades relacionadas
+  const cliente = await this.dataSource
+    .getRepository(Client)
+    .findOne({ where: { id: data.id_cliente } });
+  if (!cliente) throw new NotFoundException('Cliente no encontrado');
+
+  const evento = await this.dataSource
+    .getRepository(Evento)
+    .findOne({ where: { id_evento: data.id_evento } });
+  if (!evento) throw new NotFoundException('Evento no encontrado');
+
+  const ubicacion = await this.ubicacionRepo.findOne({
+    where: { id_ubicacion: data.id_ubicacion },
+  });
+  if (!ubicacion) throw new NotFoundException('Ubicación no encontrada');
+
+  // 3. Crear contrato con relaciones
+  const contrato = this.contratoRepo.create({
+    cliente,
+    evento,
+    ubicacion,
+    fecha_evento: data.fecha_evento,
+    bloque: data.bloque,
+    hora_inicio: data.hora_inicio,
+    hora_fin: data.hora_fin,
+    tipo_servicio: data.tipo_servicio,
+    horas_contratadas: data.horas_contratadas,
+    adelanto: data.adelanto,
+    saldo: data.saldo,
+    fecha_adelanto: data.fecha_adelanto,
+    estado: 'pendiente',
+  });
+
+  await this.contratoRepo.save(contrato);
+
+  // 4. Ahora sí: notificar al admin
+  const admins = await this.userRepo
+    .createQueryBuilder('user')
+    .leftJoinAndSelect('user.roles', 'role')
+    .leftJoinAndSelect('user.persona', 'persona')
+    .where('LOWER(role.nombre) = LOWER(:rol)', { rol: 'ADMIN' })
+    .getMany();
+
+for (const admin of admins) {
+  if (!admin.persona) continue; // seguridad
+
+  const notifDto = await this.notificacionesService.generarNotificacion(
+    TipoNotificacion.ADMIN,
+    contrato,
+    admin.persona, // 👈 aquí ya pasas Persona
+  );
+
+  await this.notificacionesService.enviar(notifDto);
+}
+
+  return contrato;
+}
 
   // Obtener contrato con todas sus relaciones
-  async getContrato(id: string) {
-    const contrato = await this.contratoRepo.findOne({
-      where: { id_contrato: id },
-      relations: [
-        'cliente',
-        'evento',
-        'ubicacion',
-        'integrantes',
-        'reemplazos',
-        'pagos',
-      ],
-    });
-    if (!contrato) throw new NotFoundException('Contrato no encontrado');
-    return contrato;
-  }
+ async getContrato(id: string) {
+  const contrato = await this.contratoRepo.findOne({
+    where: { id_contrato: id },
+    relations: [
+      'cliente',
+      'evento',
+      'ubicacion',
+      'integrantes',
+      'integrantes.integrante',
+      'integrantes.integrante.persona', // 👈 relación anidada
+      'reemplazos',
+      'reemplazos.reemplazo',
+      'reemplazos.reemplazo.persona',   // 👈 relación anidada
+      'pagos',
+    ],
+  });
+
+  if (!contrato) throw new NotFoundException('Contrato no encontrado');
+  return contrato;
+}
 
   // Confirmar contrato (solo integrantes, no reemplazos)
 async confirmarContrato(contratoId: string) {
@@ -104,89 +165,97 @@ async confirmarContrato(contratoId: string) {
   await queryRunner.startTransaction();
 
   try {
+    // 1. Obtener contrato
     const contrato = await queryRunner.manager.findOne(Contrato, {
       where: { id_contrato: contratoId },
-      relations: ['ubicacion'],
+      relations: ['ubicacion', 'evento', 'cliente', 'cliente.persona'],
     });
     if (!contrato) throw new NotFoundException('Contrato no encontrado');
 
-    // 🔹 Validar disponibilidad
+    // 2. Validar disponibilidad
     const disponibilidad = await queryRunner.manager.findOne(DisponibilidadEvento, {
       where: { fecha: contrato.fecha_evento, bloque: contrato.bloque },
     });
-    if (disponibilidad && disponibilidad.estado === 'ocupado') {
+
+    if (disponibilidad?.estado === 'ocupado') {
       await queryRunner.rollbackTransaction();
       return { estado: 'pendiente', mensaje: 'Fecha y bloque ocupados' };
     }
 
-    // 🔹 Especialidades requeridas según tipo_servicio
+    // 3. Especialidades requeridas
     const especialidadesRequeridas = await queryRunner.manager.find(TipoServicioEspecialidad, {
       where: { tipo_servicio: contrato.tipo_servicio },
       relations: ['especialidad'],
     });
 
-    // 🔹 Integrantes aceptados
-   const contratoIntegrantes = await queryRunner.manager.find(ContratoIntegrante, {
-  where: { contrato: { id_contrato: contratoId }, estado: 'aceptado' },
-  relations: ['integrante', 'integrante.persona'],
-});
-
-    console.log('ContratoIntegrantes RAW:', contratoIntegrantes);
-
-    // 🔹 Reemplazos aceptados
-    const contratoReemplazos = await queryRunner.manager.find(ContratoReemplazo, {
+    // 4. Integrantes aceptados
+    const contratoIntegrantes = await queryRunner.manager.find(ContratoIntegrante, {
       where: { contrato: { id_contrato: contratoId }, estado: 'aceptado' },
-      relations: ['reemplazo', 'reemplazo.especialidadesAsignadas', 'reemplazo.especialidadesAsignadas.especialidad', 'reemplazo.persona'],
+      relations: ['integrante', 'integrante.persona'],
     });
 
+    // 5. Reemplazos aceptados
+    const contratoReemplazos = await queryRunner.manager.find(ContratoReemplazo, {
+      where: { contrato: { id_contrato: contratoId }, estado: 'aceptado' },
+      relations: ['reemplazo', 'reemplazo.persona'],
+    });
+
+    // 6. Validar cobertura
     let faltantes: { especialidad: string; estado: string }[] = [];
-    let cobertura: { especialidad: string; estado: string; tipo: string; nombre: string }[] = [];
+let cobertura: { especialidad: string; estado: string; tipo: string; nombre: string }[] = [];
 
     for (const esp of especialidadesRequeridas) {
+      const nombreEsp = esp.especialidad.nombre.toLowerCase();
       let cubierta = false;
-      let nombreIntegrante: string | null = null;
-      let tipoCobertura: string | null = null;
 
-      // 🔹 Revisar integrantes aceptados
-      for (const ci of contratoIntegrantes) {
-        if (ci.especialidad.toLowerCase() === esp.especialidad.nombre.toLowerCase()) {
-          cubierta = true;
-          tipoCobertura = 'integrante';
-          nombreIntegrante = ci.integrante.persona
-            ? `${ci.integrante.persona.nombre} ${ci.integrante.persona.apellido}`
-            : 'Integrante';
-        }
-      }
+      // Integrantes aceptados
+      const integrante = contratoIntegrantes.find(
+        (ci) => ci.especialidad.toLowerCase() === nombreEsp,
+      );
 
-      // 🔹 Revisar reemplazos aceptados
-      for (const cr of contratoReemplazos) {
-        for (const re of cr.reemplazo.especialidadesAsignadas ?? []) {
-          if (re.especialidad.nombre.toLowerCase() === esp.especialidad.nombre.toLowerCase()) {
-            cubierta = true;
-            tipoCobertura = 'reemplazo';
-            nombreIntegrante = cr.reemplazo.persona
-              ? `${cr.reemplazo.persona.nombre} ${cr.reemplazo.persona.apellido}`
-              : 'Reemplazo';
-          }
-        }
-      }
-
-      // 🔹 Clasificación
-      if (cubierta) {
+      if (integrante) {
+        cubierta = true;
         cobertura.push({
           especialidad: esp.especialidad.nombre,
           estado: 'cubierta',
-          tipo: tipoCobertura!,
-          nombre: nombreIntegrante!,
+          tipo: 'integrante',
+         nombre: integrante.integrante?.persona
+  ? `${integrante.integrante.persona.nombre} ${integrante.integrante.persona.apellido}`
+  : 'Persona no encontrada',
         });
-      } else {
-        faltantes.push({ especialidad: esp.especialidad.nombre, estado: 'faltante' });
+        continue;
+      }
+
+      // Reemplazos aceptados (solo la especialidad aceptada)
+      const reemplazo = contratoReemplazos.find(
+        (cr) => cr.especialidad.toLowerCase() === nombreEsp,
+      );
+
+      if (reemplazo) {
+        cubierta = true;
+        cobertura.push({
+          especialidad: esp.especialidad.nombre,
+          estado: 'cubierta',
+          tipo: 'reemplazo',
+          nombre: reemplazo.reemplazo?.persona
+  ? `${reemplazo.reemplazo.persona.nombre} ${reemplazo.reemplazo.persona.apellido}`
+  : 'Persona no encontrada',
+        });
+        continue;
+      }
+
+      // Si no está cubierta
+      if (!cubierta) {
+        faltantes.push({
+          especialidad: esp.especialidad.nombre,
+          estado: 'faltante',
+        });
       }
     }
 
-    // 🔹 Si hay faltantes → buscar posibles reemplazos
+    // 7. Si hay faltantes → buscar reemplazos sugeridos
     if (faltantes.length > 0) {
-      let posiblesReemplazos: Record<string, any[]> = {};
+      const posiblesReemplazos = {};
 
       for (const f of faltantes) {
         const candidatos = await queryRunner.manager.find(Reemplazo, {
@@ -202,7 +271,7 @@ async confirmarContrato(contratoId: string) {
           )
           .map((r) => ({
             id_reemplazo: r.id,
-            nombre: r.persona ? `${r.persona.nombre} ${r.persona.apellido}` : null,
+            nombre: `${r.persona.nombre} ${r.persona.apellido}`,
             especialidad: f.especialidad,
             tarifa_base_hora: r.tarifa_base_hora,
             moneda: r.moneda,
@@ -219,37 +288,40 @@ async confirmarContrato(contratoId: string) {
       };
     }
 
-    // 🔹 Validar pago de adelanto
+    // 8. Validar pago de adelanto
     const pagoAdelanto = await queryRunner.manager.findOne(Pago, {
       where: { contrato: { id_contrato: contratoId }, tipo: 'adelanto' },
     });
+
     if (!pagoAdelanto) {
       await queryRunner.rollbackTransaction();
       return { estado: 'pendiente', mensaje: 'Contrato pendiente: falta pago de adelanto' };
     }
 
-    // 🔹 Validar aprobación admin
+    // 9. Validar aprobación admin
     if (!contrato.admin_aprobacion) {
       await queryRunner.rollbackTransaction();
       return { estado: 'pendiente', mensaje: 'Contrato pendiente: falta aprobación del administrador' };
     }
 
-    // 🔹 Confirmar contrato
+    // 10. Confirmar contrato
     contrato.estado = 'confirmado';
     await queryRunner.manager.save(contrato);
 
-    // 🔹 Guardar disponibilidad
-    const slot = disponibilidad
-      ? disponibilidad
-      : queryRunner.manager.create(DisponibilidadEvento, {
-          fecha: contrato.fecha_evento,
-          bloque: contrato.bloque,
-        });
+    // 11. Guardar disponibilidad
+    const slot =
+      disponibilidad ??
+      queryRunner.manager.create(DisponibilidadEvento, {
+        fecha: contrato.fecha_evento,
+        bloque: contrato.bloque,
+      });
+
     slot.estado = 'ocupado';
     slot.contrato = contrato;
     await queryRunner.manager.save(slot);
 
     await queryRunner.commitTransaction();
+
 
     return {
       estado: contrato.estado,
@@ -263,6 +335,9 @@ async confirmarContrato(contratoId: string) {
     await queryRunner.release();
   }
 }
+
+
+
   async reabrirContrato(id: string) {
     const contrato = await this.contratoRepo.findOne({
       where: { id_contrato: id },
@@ -288,6 +363,282 @@ async confirmarContrato(contratoId: string) {
     contrato.motivo_cancelacion = motivo ?? 'No especificado';
     return this.contratoRepo.save(contrato);
   }
+
+// aceptarInvitacion Integrante en Contrato
+async aceptarInvitacion(contratoId: string, personaId: string) {
+  const contrato = await this.contratoRepo.findOne({ where: { id_contrato: contratoId } });
+  const integrante = await this.integranteRepo.findOne({
+    where: { persona: { id: personaId } },
+    relations: ['persona', 'especialidadesAsignadas', 'especialidadesAsignadas.especialidad'],
+  });
+
+  if (!contrato || !integrante) {
+    throw new Error('Contrato o integrante no encontrado');
+  }
+
+  // 1. Especialidad primaria
+  const especialidadPrimaria = integrante.especialidadesAsignadas.find(e => e.tipo === 'primario');
+
+  // 2. Horas contratadas (del contrato)
+  const horasContratadas = contrato.horas_contratadas; // ajusta según tu entity Contrato
+
+  // 3. Sueldo base del integrante
+  const sueldoBase = integrante.tarifa_base_hora; // ajusta según tu entity Integrante
+
+  // 4. Calcular compensación
+  const compensacionHora = horasContratadas * sueldoBase;
+
+  // 5. Crear o actualizar registro
+  let registro = await this.contratoIntegranteRepo.findOne({
+    where: { id_contrato: contratoId, id_integrante: integrante.id },
+  });
+
+  if (!registro) {
+    registro = this.contratoIntegranteRepo.create({
+      id_contrato: contratoId,
+      id_integrante: integrante.id,
+      especialidad: especialidadPrimaria?.especialidad.nombre ?? 'N/A',
+      compensacion_hora: compensacionHora,
+      horas_contratadas: horasContratadas,
+      estado: 'aceptado',
+    });
+  } else {
+    registro.estado = 'aceptado';
+    registro.especialidad = especialidadPrimaria?.especialidad.nombre ?? registro.especialidad;
+    registro.compensacion_hora = compensacionHora;
+    registro.horas_contratadas = horasContratadas;
+  }
+
+   await this.contratoIntegranteRepo.save(registro);
+
+  // 6. Actualizar notificación correspondiente
+  const notificacion = await this.notificacioneRepo.findOne({
+    where: { contrato: { id_contrato: contratoId }, persona: { id: personaId } },
+  });
+
+  if (notificacion) {
+    notificacion.estado = 'aceptado';
+    await this.notificacioneRepo.save(notificacion);
+  }
+
+  // Generar resumen actualizado
+  const resumen = await this.getResumenContrato(contratoId);
+
+const notificacionAdmin = await this.notificacionesService.generarNotificacion(
+  TipoNotificacion.ADMIN_RESUMEN,
+  contrato,
+  integrante.persona,
+  undefined,
+  resumen
+);
+
+await this.notificacioneRepo.save(this.notificacioneRepo.create(notificacionAdmin));
+
+return resumen;
+
+
+}
+
+
+// rechazarInvitacion Integrante en Contrato
+
+ async rechazarInvitacion(contratoId: string, personaId: string) {
+  const contrato = await this.contratoRepo.findOne({ where: { id_contrato: contratoId } });
+  const integrante = await this.integranteRepo.findOne({
+    where: { persona: { id: personaId } },
+    relations: ['persona', 'especialidadesAsignadas', 'especialidadesAsignadas.especialidad'],
+  });
+
+  if (!contrato || !integrante) {
+    throw new Error('Contrato o integrante no encontrado');
+  }
+
+  // 1. Especialidad primaria
+  const especialidadPrimaria = integrante.especialidadesAsignadas.find(e => e.tipo === 'primario');
+
+  // 2. Horas contratadas (del contrato)
+  const horasContratadas = contrato.horas_contratadas;
+
+  // 3. Sueldo base del integrante
+  const sueldoBase = integrante.tarifa_base_hora;
+
+  // 4. Calcular compensación (aunque rechace, puedes guardar el cálculo o poner 0 según tu lógica)
+  const compensacionHora = horasContratadas * sueldoBase;
+
+  // 5. Crear o actualizar registro
+  let registro = await this.contratoIntegranteRepo.findOne({
+    where: { id_contrato: contratoId, id_integrante: integrante.id },
+  });
+
+  if (!registro) {
+    registro = this.contratoIntegranteRepo.create({
+      id_contrato: contratoId,
+      id_integrante: integrante.id,
+      especialidad: especialidadPrimaria?.especialidad.nombre ?? 'N/A',
+      compensacion_hora: compensacionHora,
+      horas_contratadas: horasContratadas,
+      estado: 'rechazado',
+    });
+  } else {
+    registro.estado = 'rechazado';
+    registro.especialidad = especialidadPrimaria?.especialidad.nombre ?? registro.especialidad;
+    registro.compensacion_hora = compensacionHora;
+    registro.horas_contratadas = horasContratadas;
+  }
+
+  await this.contratoIntegranteRepo.save(registro);
+
+  // 6. Actualizar notificación correspondiente
+  const notificacion = await this.notificacioneRepo.findOne({
+    where: { contrato: { id_contrato: contratoId }, persona: { id: personaId } },
+  });
+
+  if (notificacion) {
+    notificacion.estado = 'rechazado';
+    await this.notificacioneRepo.save(notificacion);
+  }
+
+  return registro;
+}
+
+
+// aceptarInvitacion Reemplazo en Contrato
+async aceptarInvitacionReemplazo(contratoId: string, personaId: string) {
+  const contrato = await this.contratoRepo.findOne({ where: { id_contrato: contratoId } });
+  const reemplazo = await this.reemplazoRepo.findOne({
+    where: { persona: { id: personaId } },
+    relations: ['persona', 'especialidadesAsignadas', 'especialidadesAsignadas.especialidad'],
+  });
+
+  if (!contrato || !reemplazo) {
+    throw new Error('Contrato o reemplazo no encontrado');
+  }
+
+  // 1. Especialidad primaria
+  const especialidadPrimaria = reemplazo.especialidadesAsignadas.find(e => e.tipo === 'primario');
+
+  // 2. Horas contratadas (del contrato)
+  const horasContratadas = contrato.horas_contratadas; // ajusta según tu entity Contrato
+
+  // 3. Sueldo base del integrante
+  const sueldoBase = reemplazo.tarifa_base_hora; // ajusta según tu entity Integrante
+
+  // 4. Calcular compensación
+  const compensacionHora = horasContratadas * sueldoBase;
+
+  // 5. Crear o actualizar registro
+  let registro = await this.contratoReemplazoRepo.findOne({
+    where: { id_contrato: contratoId, id_reemplazo: reemplazo.id },
+  });
+
+  if (!registro) {
+    registro = this.contratoReemplazoRepo.create({
+      id_contrato: contratoId,
+      id_reemplazo: reemplazo.id,
+      especialidad: especialidadPrimaria?.especialidad.nombre ?? 'N/A',
+      compensacion_hora: compensacionHora,
+      horas_contratadas: horasContratadas,
+      estado: 'aceptado',
+    });
+  } else {
+    registro.estado = 'aceptado';
+    registro.especialidad = especialidadPrimaria?.especialidad.nombre ?? registro.especialidad;
+    registro.compensacion_hora = compensacionHora;
+    registro.horas_contratadas = horasContratadas;
+  }
+
+   await this.contratoReemplazoRepo.save(registro);
+
+  // 6. Actualizar notificación correspondiente
+  const notificacion = await this.notificacioneRepo.findOne({
+    where: { contrato: { id_contrato: contratoId }, persona: { id: personaId } },
+  });
+
+  if (notificacion) {
+    notificacion.estado = 'aceptado';
+    await this.notificacioneRepo.save(notificacion);
+  }
+
+  // Generar resumen actualizado
+  const resumen = await this.getResumenContrato(contratoId);
+
+const notificacionAdmin = await this.notificacionesService.generarNotificacion(
+  TipoNotificacion.ADMIN_RESUMEN,
+  contrato,
+  reemplazo.persona,
+  undefined,
+  resumen
+);
+
+await this.notificacioneRepo.save(this.notificacioneRepo.create(notificacionAdmin));
+
+return resumen;
+
+
+}
+
+
+// rechazarInvitacion Reemplazo en Contrato
+ async rechazarInvitacionReemplazo(contratoId: string, personaId: string) {
+  const contrato = await this.contratoRepo.findOne({ where: { id_contrato: contratoId } });
+  const reemplazo = await this.reemplazoRepo.findOne({
+    where: { persona: { id: personaId } },
+    relations: ['persona', 'especialidadesAsignadas', 'especialidadesAsignadas.especialidad'],
+  });
+
+  if (!contrato || !reemplazo) {
+    throw new Error('Contrato o reemplazo no encontrado');
+  }
+
+  // 1. Especialidad primaria
+  const especialidadPrimaria = reemplazo.especialidadesAsignadas.find(e => e.tipo === 'primario');
+
+  // 2. Horas contratadas (del contrato)
+  const horasContratadas = contrato.horas_contratadas;
+
+  // 3. Sueldo base del integrante
+  const sueldoBase = reemplazo.tarifa_base_hora;
+
+  // 4. Calcular compensación (aunque rechace, puedes guardar el cálculo o poner 0 según tu lógica)
+  const compensacionHora = horasContratadas * sueldoBase;
+
+  // 5. Crear o actualizar registro
+  let registro = await this.contratoReemplazoRepo.findOne({
+    where: { id_contrato: contratoId, id_reemplazo: reemplazo.id },
+  });
+
+  if (!registro) {
+    registro = this.contratoReemplazoRepo.create({
+      id_contrato: contratoId,
+      id_reemplazo: reemplazo.id,
+      especialidad: especialidadPrimaria?.especialidad.nombre ?? 'N/A',
+      compensacion_hora: compensacionHora,
+      horas_contratadas: horasContratadas,
+      estado: 'rechazado',
+    });
+  } else {
+    registro.estado = 'rechazado';
+    registro.especialidad = especialidadPrimaria?.especialidad.nombre ?? registro.especialidad;
+    registro.compensacion_hora = compensacionHora;
+    registro.horas_contratadas = horasContratadas;
+  }
+
+  await this.contratoReemplazoRepo.save(registro);
+
+  // 6. Actualizar notificación correspondiente
+  const notificacion = await this.notificacioneRepo.findOne({
+    where: { contrato: { id_contrato: contratoId }, persona: { id: personaId } },
+  });
+
+  if (notificacion) {
+    notificacion.estado = 'rechazado';
+    await this.notificacioneRepo.save(notificacion);
+  }
+
+  return registro;
+}
+
+
 
 
 
@@ -463,6 +814,9 @@ async obtenerContratoConIntegrantes(id_contrato: string): Promise<Contrato> {
 
 
 
+
+
+
   // Actualizar contrato
   async updateContrato(id: string, data: Partial<Contrato>) {
     const contrato = await this.contratoRepo.findOne({
@@ -483,4 +837,128 @@ async obtenerContratoConIntegrantes(id_contrato: string): Promise<Contrato> {
 
     return this.contratoRepo.remove(contrato);
   }
+
+
+async getResumenContrato(contratoId: string): Promise<ResumenContratoDTO> {
+  // Buscar contrato
+  const contrato = await this.contratoRepo.findOne({
+    where: { id_contrato: contratoId },
+  });
+  if (!contrato) throw new Error('Contrato no encontrado');
+
+  // Invitaciones aceptadas/rechazadas desde contrato_integrante
+  const invitaciones = await this.contratoIntegranteRepo.find({
+    where: { id_contrato: contratoId },
+    relations: ['integrante', 'integrante.persona'],
+  });
+
+  const aceptados: InvitacionDTO[] = invitaciones
+    .filter(i => i.estado === 'aceptado')
+    .map(i => ({
+      nombre: i.integrante.persona.nombre,
+      especialidad: i.especialidad,
+      estado: 'aceptado',
+    }));
+
+  const rechazados: InvitacionDTO[] = invitaciones
+    .filter(i => i.estado === 'rechazado')
+    .map(i => ({
+      nombre: i.integrante.persona.nombre,
+      especialidad: i.especialidad,
+      estado: 'rechazado',
+    }));
+
+  // Pendientes desde notificaciones (solo especialidad primaria y filtrado por tipo_servicio)
+  const notificacionesPendientes = await this.notificacioneRepo.find({
+    where: { contrato: { id_contrato: contratoId }, estado: 'pendiente' },
+    relations: ['persona'],
+  });
+
+  const pendientes: InvitacionDTO[] = [];
+  for (const n of notificacionesPendientes) {
+    const integrante = await this.integranteRepo.findOne({
+      where: { persona: { id: n.persona.id } },
+      relations: ['persona', 'especialidadesAsignadas', 'especialidadesAsignadas.especialidad'],
+    });
+
+    if (integrante) {
+      // Tomar solo la especialidad primaria
+      const especialidadPrimaria = integrante.especialidadesAsignadas.find(e => e.tipo === 'primario');
+
+      // Validar que la especialidad primaria esté dentro de las requeridas para el tipo_servicio
+      const esRequerida = await this.tipoServicioEspecialidadRepo.findOne({
+        where: { tipo_servicio: contrato.tipo_servicio, especialidad: { id: especialidadPrimaria?.especialidad.id }, requerido: true },
+      });
+
+      if (especialidadPrimaria && esRequerida) {
+        pendientes.push({
+          nombre: integrante.persona.nombre,
+          especialidad: especialidadPrimaria.especialidad.nombre,
+          estado: 'pendiente',
+        });
+      } else {
+        // Si no tiene primaria o no es requerida, fallback a N/A
+        pendientes.push({
+          nombre: integrante.persona.nombre,
+          especialidad: 'N/A',
+          estado: 'pendiente',
+        });
+      }
+    }
+  }
+
+  // Faltantes desde servicio_especialidad
+  const requeridas = await this.tipoServicioEspecialidadRepo.find({
+    where: { tipo_servicio: contrato.tipo_servicio, requerido: true },
+    relations: ['especialidad'],
+  });
+
+  const faltantes = requeridas.filter(req => {
+  const aceptado = aceptados.some(a => a.especialidad === req.especialidad.nombre);
+  const rechazado = rechazados.some(r => r.especialidad === req.especialidad.nombre);
+  return !aceptado && rechazado; // solo faltante si nadie aceptó y alguien rechazó
+});
+
+  // Sugerencias desde members_replacements
+  const sugerencias: SugerenciaDTO[] = [];
+  for (const f of faltantes) {
+    const candidatos = await this.reemplazoRepo.find({
+      relations: ['especialidadesAsignadas', 'especialidadesAsignadas.especialidad', 'persona'],
+    });
+
+  const filtrados = candidatos
+  .filter(c =>
+    c.especialidadesAsignadas.some(e => e.especialidad.id === f.especialidad.id)
+  )
+  .map(c => {
+    const esp = c.especialidadesAsignadas.find(e => e.especialidad.id === f.especialidad.id);
+
+    const tipo = esp?.tipo === 'primario' ? 'primario' : 'secundario';
+
+    return {
+      id: c.id,
+      nombre: c.persona.nombre,
+      tipo: tipo as 'primario' | 'secundario',
+    };
+  })
+  .sort((a, b) => (a.tipo === 'primario' ? -1 : 1));
+
+    sugerencias.push({ especialidad: f.especialidad.nombre, candidatos: filtrados });
+  }
+
+  return {
+    contratoId,
+    aceptados,
+    rechazados,
+    pendientes,
+    faltantes: faltantes.map(f => f.especialidad.nombre),
+    sugerencias,
+  };
+}
+
+
+
+
+
+
 }
