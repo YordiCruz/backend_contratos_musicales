@@ -2,6 +2,7 @@ import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGenerate
 import { Categoria } from "../../categorias/entities/categoria.entity";
 import { User } from "src/admin/users/entities/user.entity";
 import { Media } from "../../media/entities/media.entity";
+import { Contrato } from "src/admin/contratos/entities/contrato.entity";
 
 @Entity('events')
 export class Evento {
@@ -26,6 +27,9 @@ export class Evento {
 
   @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })
   descuento: number;
+
+  @OneToMany(() => Contrato, contrato => contrato.evento)
+  contratos: Contrato[];
 
   @ManyToOne(() => User, usuario => usuario.eventos_registrados)
   creado_por: User;

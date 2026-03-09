@@ -9,6 +9,7 @@ import { CategoriasEspecialidadSeeder } from './database/seeders/categorias-espe
 import { join } from 'path';
 
 import * as express from 'express';
+import { ServicioEspecialidadSeeder } from './database/seeders/tipo-servicio-especialidades.seeder';
 
 
 async function bootstrap() {
@@ -28,6 +29,10 @@ await permissionsSeeder.run();
 
   const especialidadseeders = app.get(EspecialidadesSeeder);
   await especialidadseeders.run();
+
+  const servicioespecialidadseeders = app.get(ServicioEspecialidadSeeder);
+  await servicioespecialidadseeders.run();
+
 
 // }
 

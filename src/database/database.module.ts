@@ -9,11 +9,13 @@ import { CategoriasEspecialidadSeeder } from './seeders/categorias-especialidad.
 import { EspecialidadesSeeder } from './seeders/especialidades.seeder';
 import { CategoriasEspecialidad } from 'src/admin/especialidades/categorias_especialidads/entities/categorias_especialidad.entity';
 import { Especialidad } from 'src/admin/especialidades/especialidads/entities/especialidad.entity';
+import { TipoServicioEspecialidad } from 'src/admin/contratos/entities/tipo-servicio-especialidad.entity';
+import { ServicioEspecialidadSeeder } from './seeders/tipo-servicio-especialidades.seeder';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([User, Role, Permission, Especialidad, CategoriasEspecialidad]),],
-    providers: [RolesSeeder, PermissionsSeeder, CategoriasEspecialidadSeeder, EspecialidadesSeeder],
-    exports: [RolesSeeder, PermissionsSeeder, CategoriasEspecialidadSeeder, EspecialidadesSeeder],
+    imports: [TypeOrmModule.forFeature([User, Role, Permission, Especialidad, CategoriasEspecialidad, TipoServicioEspecialidad]),],
+    providers: [RolesSeeder, PermissionsSeeder, CategoriasEspecialidadSeeder, EspecialidadesSeeder, ServicioEspecialidadSeeder],
+    exports: [RolesSeeder, PermissionsSeeder, CategoriasEspecialidadSeeder, EspecialidadesSeeder, ServicioEspecialidadSeeder],
 
 })
 export class DatabaseModule {}

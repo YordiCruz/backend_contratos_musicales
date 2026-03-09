@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsIn, IsNumber, IsString } from 'class-validator';
+import { IsBoolean, IsIn, IsNumber, IsOptional, IsString } from 'class-validator';
 export class CreateReemplazoDataDto {
     
   @IsNumber({ maxDecimalPlaces: 2 })
@@ -14,6 +14,6 @@ export class CreateReemplazoDataDto {
   moneda: string;
 
   @IsBoolean()
-  @Transform(({ value }) => value === 'true' || value === true)
-  disponible: boolean;
+@IsOptional()
+disponible?: boolean;
 }

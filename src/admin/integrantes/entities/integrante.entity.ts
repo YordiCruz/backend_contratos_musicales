@@ -1,15 +1,21 @@
+import { ContratoIntegrante } from "src/admin/contratos/entities/contrato-integrante.entity";
 import { Especialidad } from "src/admin/especialidades/especialidads/entities/especialidad.entity";
 import { Persona } from "src/admin/personas/entities/persona.entity";
 import { User } from "src/admin/users/entities/user.entity";
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { IntegranteEspecialidad } from "./integrante-especialidad.entity";
 
 @Entity('group_members')
 export class Integrante {
 
     @PrimaryGeneratedColumn('uuid')
     id: string
+    
+    @Column({ type: 'uuid' })
+id_persona: string;
 
-   @OneToOne(() => Persona)
+
+   @OneToOne(() => Persona, persona => persona.integrante)
    @JoinColumn({ name: 'id_persona' })
    persona: Persona; 
 
@@ -29,6 +35,9 @@ export class Integrante {
     @JoinColumn({ name: 'registrado_por' })
     registrado_por: User;
 
+    @OneToMany(() => ContratoIntegrante, contratoIntegrante => contratoIntegrante.integrante)
+    contratos: ContratoIntegrante[]
+
 
     @CreateDateColumn({ type: 'timestamp' })
     creado_en: Date
@@ -39,18 +48,7 @@ export class Integrante {
     @DeleteDateColumn({ type: 'timestamp', nullable: true })
     eliminado_en: Date
 
-    @ManyToMany(()=> Especialidad, especialidad => especialidad.integrantes)
-    @JoinTable({
-        name: 'members_specialties',
-        joinColumn: {
-            name: 'id_integrante',
-            referencedColumnName: 'id'
-        },
-        inverseJoinColumn: {
-            name: 'id_especialidad',
-            referencedColumnName: 'id'
-        }
-    })
-    especialidades: Especialidad[]
+    @OneToMany(() => IntegranteEspecialidad, ie => ie.integrante)
+    especialidadesAsignadas: IntegranteEspecialidad[];
 
 }

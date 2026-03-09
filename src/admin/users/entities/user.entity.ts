@@ -1,3 +1,4 @@
+import { Pago } from "src/admin/contratos/entities/pago.entity";
 import { Evento } from "src/admin/eventos/eventos/entities/evento.entity";
 import { Persona } from "src/admin/personas/entities/persona.entity";
 import { Reemplazo } from "src/admin/reemplazos/entities/reemplazo.entity";
@@ -88,5 +89,8 @@ export class User {
 
     @DeleteDateColumn({ type: 'timestamp', nullable: true })
     eliminado_en: Date | null;
+
+    @OneToMany(() => Pago, (pago) => pago.registrado_por)
+    pagos: Pago[]
 
 }

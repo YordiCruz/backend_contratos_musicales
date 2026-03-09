@@ -1,8 +1,4 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from './users/entities/user.entity';
-import { Permission } from './permissions/entities/permission.entity';
-import { Role } from './roles/entities/role.entity';
 import { UsersModule } from './users/users.module';
 import { RolesModule } from './roles/roles.module';
 import { PermissionsModule } from './permissions/permissions.module';
@@ -19,10 +15,8 @@ import { ReemplazosController } from './reemplazos/reemplazos.controller';
 import { IntegrantesController } from './integrantes/integrantes.controller';
 import { CategoriasEspecialidadsController } from './especialidades/categorias_especialidads/categorias_especialidads.controller';
 import { AdminAuthController } from 'src/auth/admin-auth/admin-auth.controller';
-import { EspecialidadsModule } from './especialidades/especialidads/especialidads.module';
 import { EspecialidadsController } from './especialidades/especialidads/especialidads.controller';
 import { EventosModule } from './eventos/eventos.module';
-import { DisponibilidadModule } from './disponibilidad/disponibilidad.module';
 import { DisponibilidadEventosModule } from './disponibilidad-eventos/disponibilidad-eventos.module';
 import { NotificacionesModule } from './notificaciones/notificaciones.module';
 import { EmailModule } from './email/email.module';
@@ -39,7 +33,6 @@ import { EmailModule } from './email/email.module';
     CategoriasEspecialidadsModule,
     AdminAuthModule,
     EventosModule,
-    DisponibilidadModule,
     DisponibilidadEventosModule,
     NotificacionesModule,
     EmailModule

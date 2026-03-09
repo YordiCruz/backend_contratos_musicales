@@ -3,6 +3,7 @@ export enum TipoNotificacion {
   REEMPLAZO = 'REEMPLAZO',
   CLIENTE = 'CLIENTE',
   ADMIN = 'ADMIN',
+  ADMIN_RESUMEN = 'ADMIN_RESUMEN',
 }
 
 export class CreateNotificacioneDto {
