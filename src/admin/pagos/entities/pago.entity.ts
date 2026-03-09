@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
-import { Contrato } from './contrato.entity';
 import { User } from 'src/admin/users/entities/user.entity';
+import { Contrato } from 'src/admin/contratos/entities/contrato.entity';
 
 @Entity('pagos')
 export class Pago {
@@ -27,4 +27,19 @@ export class Pago {
 
   @ManyToOne(() => User, usuario => usuario.pagos, { eager: true })
   registrado_por: User;
+
+  @Column({ type: 'varchar', length: 20, default: 'pendiente' })
+estado: string;
+
+@Column({ type: 'varchar', length: 50, nullable: true })
+proveedor: string;
+
+@Column({ type: 'varchar', length: 100, nullable: true })
+transaccion_id: string;
+
+@Column({ type: 'json', nullable: true })
+payload: any;
+
+
+
 }
