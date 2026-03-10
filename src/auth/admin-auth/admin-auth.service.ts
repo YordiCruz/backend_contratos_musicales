@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/admin/users/entities/user.entity';
 import { Repository } from 'typeorm';
@@ -17,11 +17,11 @@ export class AdminAuthService {
   ) {}
 
   async login(dto: AdminLoginDto) {
-    const { username, password } = dto;
+    const { email, password } = dto;
 
     // 1. Buscar usuario
     const user = await this.userRepository.findOne({
-      where: { username },
+      where: { email },
       relations: ['roles'],
     });
 
@@ -69,10 +69,35 @@ export class AdminAuthService {
   private generarToken(user: User) {
     const payload = {
       id: user.id,
-      username: user.username,
+      email: user.email,
       roles: user.roles.map(r => r.nombre),
     };
 
     return this.jwtService.sign(payload);
   }
+
+  async getProfile(userId: string) {
+  const admin = await this.userRepository.findOne({
+    where: { id: userId },
+    relations: ['persona'], // relación con persona
+  });
+
+  if (!admin) {
+    throw new NotFoundException('Usuario no encontrado');
+  }
+
+  return {
+    id: admin.id,
+    email: admin.email,
+    role: admin.roles,
+    persona: {
+      nombre: admin.persona.nombre,
+      apellido: admin.persona.apellido,
+      ci: admin.persona.documento_identidad,
+      telefono: admin.persona.telefono,
+      email: admin.persona.email
+    },
+  };
+}
+
 }
