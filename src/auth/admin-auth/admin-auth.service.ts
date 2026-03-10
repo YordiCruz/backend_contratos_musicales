@@ -17,11 +17,11 @@ export class AdminAuthService {
   ) {}
 
   async login(dto: AdminLoginDto) {
-    const { username, password } = dto;
+    const { email, password } = dto;
 
     // 1. Buscar usuario
     const user = await this.userRepository.findOne({
-      where: { username },
+      where: { email },
       relations: ['roles'],
     });
 
@@ -69,7 +69,7 @@ export class AdminAuthService {
   private generarToken(user: User) {
     const payload = {
       id: user.id,
-      username: user.username,
+      email: user.email,
       roles: user.roles.map(r => r.nombre),
     };
 
