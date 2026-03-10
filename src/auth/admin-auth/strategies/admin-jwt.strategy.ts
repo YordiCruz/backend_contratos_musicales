@@ -23,7 +23,7 @@ export class AdminJwtStrategy extends PassportStrategy(Strategy, 'admin-jwt') {
     // Lo que devuelvas aquí estará disponible en req.user
     return {
       id: payload.id,
-      email: payload.email,
+      username: payload.username,
       roles: payload.roles,
     };
   }

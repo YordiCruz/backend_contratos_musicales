@@ -5,7 +5,7 @@ export class CreateUserDataDto {
     /** Nombre de usuario único */
   @IsString()
   @IsNotEmpty()
-  email: string;
+  username: string;
 
   /** Hash o contraseña en texto plano (según tu lógica de negocio) */
   @IsString()
