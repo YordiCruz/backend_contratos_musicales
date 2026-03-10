@@ -75,4 +75,28 @@ export class AdminAuthService {
 
     return this.jwtService.sign(payload);
   }
+
+
+ async profile(user: any) {
+  const admin = await this.userRepository.findOne({
+    where: { id: user.id },
+    relations: ['persona', 'roles'],
+  });
+
+  return {
+    id: admin?.id,
+    username: admin?.username,
+    persona: {
+      nombre: admin?.persona.nombre,
+      apellido: admin?.persona.apellido,
+      documento_identidad: admin?.persona.documento_identidad,
+      email: admin?.persona.email,
+      telefono: admin?.persona.telefono,
+    },
+    roles: admin?.roles.map(r => r.nombre),
+  };
+}
+
+
+
 }
