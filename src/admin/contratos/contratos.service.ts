@@ -17,7 +17,6 @@ import { Client } from 'src/client/clients/entities/client.entity';
 import { Evento } from '../eventos/eventos/entities/evento.entity';
 import { CreateContratoDto } from './dto/create-contrato.dto';
 import { Reemplazo } from '../reemplazos/entities/reemplazo.entity';
-import { Pago } from './entities/pago.entity';
 import { TipoServicioEspecialidad } from './entities/tipo-servicio-especialidad.entity';
 import { AsignarIntegranteDto } from './dto/asignar-integrante.dto';
 import { Persona } from '../personas/entities/persona.entity';
@@ -26,6 +25,7 @@ import { CreateNotificacioneDto, TipoNotificacion } from '../notificaciones/dto/
 import { NotificacionesService } from '../notificaciones/notificaciones.service';
 import { InvitacionDTO, ResumenContratoDTO, SugerenciaDTO } from './dto/resumen-contrato.dto';
 import { Notificacione } from '../notificaciones/entities/notificacione.entity';
+import { Pago } from '../pagos/entities/pago.entity';
 
 @Injectable()
 export class ContratosService {
@@ -105,9 +105,6 @@ async createContrato(data: CreateContratoDto) {
     hora_fin: data.hora_fin,
     tipo_servicio: data.tipo_servicio,
     horas_contratadas: data.horas_contratadas,
-    adelanto: data.adelanto,
-    saldo: data.saldo,
-    fecha_adelanto: data.fecha_adelanto,
     estado: 'pendiente',
   });
 
