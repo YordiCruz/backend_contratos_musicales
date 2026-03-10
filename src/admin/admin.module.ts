@@ -20,7 +20,6 @@ import { EventosModule } from './eventos/eventos.module';
 import { DisponibilidadEventosModule } from './disponibilidad-eventos/disponibilidad-eventos.module';
 import { NotificacionesModule } from './notificaciones/notificaciones.module';
 import { EmailModule } from './email/email.module';
-import { PagosModule } from './pagos/pagos.module';
 
 @Module({
     imports: [
@@ -36,8 +35,7 @@ import { PagosModule } from './pagos/pagos.module';
     EventosModule,
     DisponibilidadEventosModule,
     NotificacionesModule,
-    EmailModule,
-    PagosModule
+    EmailModule
 ],
 
 controllers:[
