@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
 import { ClientAuthService } from './client-auth.service';
 import { UpdateClientAuthDto } from './dto/update-client-auth.dto';
 import { Throttle } from '@nestjs/throttler';
 import { ClientLoginDto } from './dto/client-login.dto';
+import { ClientJwtGuard } from './guards/client-jwt.guard';
 
 @Controller('client-auth')
 export class ClientAuthController {
@@ -14,5 +15,10 @@ export class ClientAuthController {
       return this.clientAuthService.login(dto);
   }
 
+  @Get('profile')
+  @UseGuards(ClientJwtGuard)
+  async getProfile(@Req() req) {
+    return this.clientAuthService.getProfile(req.user.id);
+  }
  
 }

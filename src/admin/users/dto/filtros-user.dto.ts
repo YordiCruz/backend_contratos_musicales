@@ -20,7 +20,7 @@ export class FiltrosUserDto {
 
    @IsOptional()
   @IsString()
-  @IsIn(['username', 'estado', 'creado_en'])
+  @IsIn(['email', 'estado', 'creado_en'])
   sort?: string;
 
   @IsOptional()
