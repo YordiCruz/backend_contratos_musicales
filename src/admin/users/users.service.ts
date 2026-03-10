@@ -32,11 +32,11 @@ export class UsersService {
 
     // 1. Validar que el username no exista
     const existe = await manager.findOne(User, {
-      where: { email: userDto.email }
+      where: { username: userDto.username }
     });
 
     if (existe) {
-      throw new Error(`El usuario '${userDto.email}' ya existe`);
+      throw new Error(`El usuario '${userDto.username}' ya existe`);
     }
 
 
@@ -85,7 +85,7 @@ export class UsersService {
 
 
     if (filters.search) {
-      query.andWhere('user.email LIKE :search', {
+      query.andWhere('user.username LIKE :search', {
         search: `%${filters.search}%`,
       });
     }
@@ -107,7 +107,7 @@ export class UsersService {
 
    return users.map(user => ({
     id: user.id,
-    email: user.email,
+    username: user.username,
     ultimo_login: user.ultimo_login,
     estado: user.estado,
     origen_registro: user.origen_registro,
@@ -169,7 +169,7 @@ export class UsersService {
 
     return {
       id: saved.id,
-      email: saved.email,
+      username: saved.username,
       ultimo_login: saved.ultimo_login,
       estado: saved.estado,
       origen_registro: saved.origen_registro,

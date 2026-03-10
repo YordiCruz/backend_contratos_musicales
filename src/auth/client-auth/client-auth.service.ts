@@ -21,11 +21,11 @@ export class ClientAuthService {
   ){}
 
  async login(dto: ClientLoginDto) {
-    const { email, password } = dto;
+    const { username, password } = dto;
 
     // 1. Buscar usuario
     const user = await this.userRepository.findOne({
-      where: { email },
+      where: { username },
       relations: ['roles'],
     });
 
@@ -73,7 +73,7 @@ export class ClientAuthService {
   private generarToken(user: User) {
     const payload = {
       id: user.id,
-      email: user.email,
+      username: user.username,
       roles: user.roles.map(r => r.nombre),
     };
 
