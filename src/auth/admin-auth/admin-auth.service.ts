@@ -79,7 +79,7 @@ export class AdminAuthService {
   async getProfile(userId: string) {
   const admin = await this.userRepository.findOne({
     where: { id: userId },
-    relations: ['persona'], // relación con persona
+    relations: ['persona', 'roles'], // relación con persona
   });
 
   if (!admin) {
@@ -87,9 +87,8 @@ export class AdminAuthService {
   }
 
   return {
-    id: admin.id,
     email: admin.email,
-    role: admin.roles,
+    role: admin.roles.map(() => r => r.nombre),
     persona: {
       nombre: admin.persona.nombre,
       apellido: admin.persona.apellido,

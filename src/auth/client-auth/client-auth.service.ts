@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { User } from 'src/admin/users/entities/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -79,4 +79,29 @@ export class ClientAuthService {
 
     return this.jwtService.sign(payload);
   }
+
+  async getProfile(userId: string) {
+    const cliente = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['persona', 'roles'], // relación con persona
+    });
+  
+    if (!cliente) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+  
+    return {
+      email: cliente.email,
+      role: cliente.roles.map(r => r.nombre),
+      persona: {
+        nombre: cliente.persona.nombre,
+        apellido: cliente.persona.apellido,
+        ci: cliente.persona.documento_identidad,
+        telefono: cliente.persona.telefono,
+        email: cliente.persona.email
+      },
+    };
+  }
+
+
 }
