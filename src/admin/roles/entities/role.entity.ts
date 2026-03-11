@@ -24,7 +24,7 @@ export class Role {
     actualizado_en: Date;
 
     @ManyToMany(() => User, (user) => user.roles)
-    user: User[];
+    users: User[];
 
     @ManyToMany(() => Permission, (permiso) => permiso.roles, {cascade: true})
     @JoinTable({

@@ -26,7 +26,7 @@ export class ClientAuthService {
     // 1. Buscar usuario
     const user = await this.userRepository.findOne({
       where: { email },
-      relations: ['roles'],
+      relations: ['roles', 'persona'],
     });
 
     // 2. Protección contra timing attacks

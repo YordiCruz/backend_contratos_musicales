@@ -22,7 +22,7 @@ export class AdminAuthService {
     // 1. Buscar usuario
     const user = await this.userRepository.findOne({
       where: { email },
-      relations: ['roles'],
+      relations: ['roles','persona'],
     });
 
     // 2. Protección contra timing attacks
@@ -58,7 +58,7 @@ export class AdminAuthService {
     user.ultimo_login = new Date();
     await this.userRepository.save(user);
 
-    console.log('SECRET ADMIN:', process.env.JWT_ADMIN_SECRET);
+    //console.log('SECRET ADMIN:', process.env.JWT_ADMIN_SECRET);
 
     // 8. Generar token
     return {
