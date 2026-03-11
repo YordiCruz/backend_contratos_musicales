@@ -64,10 +64,22 @@ export class ClientAuthService {
 
     //console.log('SECRET ADMIN:', process.env.JWT_ADMIN_SECRET);
 
-    // 8. Generar token
-    return {
-      access_token: this.generarToken(user),
-    };
+    // 8. Generar token con usuario
+   return {
+  access_token: this.generarToken(user),
+  user: {
+    id: user.id,
+    email: user.email,
+    role: user.roles[0].nombre,
+    persona: {
+      nombre: user.persona.nombre,
+      apellido: user.persona.apellido,
+      ci: user.persona.documento_identidad,
+      telefono: user.persona.telefono,
+      email: user.persona.email
+    }
+  }
+};
   }
 
   private generarToken(user: User) {
@@ -90,17 +102,20 @@ export class ClientAuthService {
       throw new NotFoundException('Usuario no encontrado');
     }
   
-    return {
-      email: cliente.email,
-      role: cliente.roles.map(r => r.nombre),
-      persona: {
-        nombre: cliente.persona.nombre,
-        apellido: cliente.persona.apellido,
-        ci: cliente.persona.documento_identidad,
-        telefono: cliente.persona.telefono,
-        email: cliente.persona.email
-      },
-    };
+   return {
+  user: {
+    id: cliente.id,
+    email: cliente.email,
+    role: cliente.roles[0].nombre, // un solo rol, no array
+    persona: {
+      nombre: cliente.persona.nombre,
+      apellido: cliente.persona.apellido,
+      ci: cliente.persona.documento_identidad,
+      telefono: cliente.persona.telefono,
+      email: cliente.persona.email
+    }
+  }
+};
   }
 
 

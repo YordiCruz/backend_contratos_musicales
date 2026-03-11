@@ -63,6 +63,18 @@ export class AdminAuthService {
     // 8. Generar token
     return {
       access_token: this.generarToken(user),
+       user: {
+    id: user.id,
+    email: user.email,
+    role: user.roles[0].nombre,
+    persona: {
+      nombre: user.persona.nombre,
+      apellido: user.persona.apellido,
+      ci: user.persona.documento_identidad,
+      telefono: user.persona.telefono,
+      email: user.persona.email
+    }
+  }
     };
   }
 
@@ -86,17 +98,20 @@ export class AdminAuthService {
     throw new NotFoundException('Usuario no encontrado');
   }
 
-  return {
+ return {
+  user: {
+    id: admin.id,
     email: admin.email,
-    role: admin.roles.map(() => r => r.nombre),
+    role: admin.roles[0].nombre, // un solo rol, no array
     persona: {
       nombre: admin.persona.nombre,
       apellido: admin.persona.apellido,
       ci: admin.persona.documento_identidad,
       telefono: admin.persona.telefono,
       email: admin.persona.email
-    },
-  };
+    }
+  }
+};
 }
 
 }
