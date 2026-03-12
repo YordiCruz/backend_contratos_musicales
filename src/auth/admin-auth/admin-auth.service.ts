@@ -60,9 +60,31 @@ export class AdminAuthService {
 
     //console.log('SECRET ADMIN:', process.env.JWT_ADMIN_SECRET);
 
+    // Payload para el JWT
+  const payload = {
+    id: user.id,
+    email: user.email,
+    roles: user.roles.map(r => r.nombre),
+  };
+
+  // Access token con expiración corta
+  const accessToken = this.jwtService.sign(payload, {
+    secret: process.env.JWT_ADMIN_SECRET,
+    expiresIn: '15m',
+  });
+
+  // Refresh token con expiración larga
+  const refreshToken = this.jwtService.sign(payload, {
+    secret: process.env.JWT_ADMIN_REFRESH_SECRET,
+    expiresIn: '7d',
+  });
+
+
     // 8. Generar token
     return {
-      access_token: this.generarToken(user),
+      access_token: accessToken,
+      refresh_token: refreshToken,
+
        user: {
     id: user.id,
     email: user.email,
@@ -78,15 +100,37 @@ export class AdminAuthService {
     };
   }
 
-  private generarToken(user: User) {
-    const payload = {
-      id: user.id,
-      email: user.email,
-      roles: user.roles.map(r => r.nombre),
-    };
+// private generarToken(user: User) {
+//   const payload = {
+//     id: user.id,
+//     email: user.email,
+//     roles: user.roles.map(r => r.nombre),
+//   };
 
-    return this.jwtService.sign(payload);
+//   return this.jwtService.sign(payload, {
+//     secret: process.env.JWT_ADMIN_SECRET,
+//     expiresIn: '15m',   // ✅ expira en 15 minutos
+//   });
+// }
+
+
+async refresh(token: string) {
+  try {
+    const payload = this.jwtService.verify(token, {
+      secret: process.env.JWT_ADMIN_REFRESH_SECRET,
+    });
+
+    const newAccessToken = this.jwtService.sign(
+      { id: payload.id, email: payload.email, roles: payload.roles },
+      { secret: process.env.JWT_ADMIN_SECRET, expiresIn: '15m' }
+    );
+
+    return { access_token: newAccessToken };
+  } catch {
+    throw new UnauthorizedException('Refresh token inválido o expirado');
   }
+}
+
 
   async getProfile(userId: string) {
   const admin = await this.userRepository.findOne({

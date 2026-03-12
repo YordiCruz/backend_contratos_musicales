@@ -21,4 +21,9 @@ async getProfile(@Req() req) {
 }
 
 
+@Post('refresh')
+async refresh(@Body('refreshToken') token: string) {
+  return this.adminAuthService.refresh(token);
+}
+
 }

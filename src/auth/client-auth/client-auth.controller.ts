@@ -20,5 +20,10 @@ export class ClientAuthController {
   async getProfile(@Req() req) {
     return this.clientAuthService.getProfile(req.user.id);
   }
+
+  @Post('refresh')
+async refresh(@Body('refreshToken') token: string) {
+  return this.clientAuthService.refresh(token);
+}
  
 }
