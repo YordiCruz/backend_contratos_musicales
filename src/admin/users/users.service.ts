@@ -10,6 +10,7 @@ import { UpdatePasswordDto } from './dto/update-password.dto';
 import { FiltrosUserDto } from './dto/filtros-user.dto';
 import { Persona } from '../personas/entities/persona.entity';
 import { CreateUserDataDto } from './dto/create-user-data.dto';
+import { UpdatePasswordUsersDto } from './dto/update-password-users.dto';
 
 @Injectable()
 export class UsersService {
@@ -202,11 +203,25 @@ export class UsersService {
   return { message: 'Contraseña actualizada correctamente' };
 }
 
+// Actualización de contraseña de los usuarios
+async updatePasswordUsers(id: string, dto: UpdatePasswordUsersDto) {
+  const user = await this.userrepo.findOne({ where: { id } });
+  if (!user) throw new NotFoundException('Usuario no encontrado');
+
+  if (dto.newpassword && dto.newpassword.trim().length > 0) {
+    user.password_hash = await bcrypt.hash(dto.newpassword, 12);
+    await this.userrepo.save(user);
+    return { message: 'Contraseña actualizada correctamente' };
+  }
+
+  // si no viene contraseña, solo permitimos actualizar otros datos (ej. correo/roles)
+  return { message: 'Contraseña no cambiada, otros datos pueden actualizarse' };
+}
  async remove(id: string) {
   const user = await this.userrepo.findOne({ where: { id } });
 
   if (!user) {
-    throw new Error('Usuario no encontrado');
+    throw new NotFoundException('Usuario no encontrado');
   }
 
   user.estado = 'inactivo';
@@ -236,6 +251,22 @@ async createUserFromExistingPersona(idPersona: string, dto: CreateUserDataDto) {
   });
 
   return await this.userrepo.save(user);
+}
+
+
+//activar usuario 
+async activar(id: string) {
+  const user = await this.userrepo.findOne({ where: { id } });
+
+  if (!user) {
+    throw new NotFoundException('Usuario no encontrado');
+  }
+
+  user.estado = 'activo';
+  user.eliminado_en = null; // opcional: limpiar la fecha de inactivación
+  await this.userrepo.save(user);
+
+  return { message: 'Usuario reactivado correctamente', user };
 }
 
 

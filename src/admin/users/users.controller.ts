@@ -17,6 +17,7 @@ import { UpdatePasswordDto } from './dto/update-password.dto';
 import { FiltrosUserDto } from './dto/filtros-user.dto';
 import { CreateUserDataDto } from './dto/create-user-data.dto';
 import { AdminJwtGuard } from 'src/auth/admin-auth/guards/admin-jwt.guard';
+import { UpdatePasswordUsersDto } from './dto/update-password-users.dto';
 
 @UseGuards(AdminJwtGuard)
 @Controller('users')
@@ -42,7 +43,7 @@ export class UsersController {
     return this.usersService.findOne(id);
   }
 
-  @Patch(':id')
+  @Patch(':id/editar')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(id, updateUserDto);
   }
@@ -53,6 +54,14 @@ export class UsersController {
     @Body() updateDto: UpdatePasswordDto,
   ) {
     return this.usersService.updatePassword(id, updateDto);
+  }
+
+   @Patch(':id/passwordUsers')
+  updatepasswordusers(
+    @Param('id') id: string,
+    @Body() updateDto: UpdatePasswordUsersDto,
+  ) {
+    return this.usersService.updatePasswordUsers(id, updateDto);
   }
 
   @Delete(':id')
@@ -69,5 +78,12 @@ createUserFromPersona(
   return this.usersService.createUserFromExistingPersona(idPersona, dto);
 }
 
+
+// activar usuario 
+
+@Patch(':id/activar')
+async activar(@Param('id') id: string) {
+  return this.usersService.activar(id);
+}
 
 }
