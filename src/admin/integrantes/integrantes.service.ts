@@ -65,7 +65,7 @@ async create(createIntegranteDto: CreateIntegranteDto, user: any): Promise<Integ
 }
 
 
- async findAll(
+async findAll(
   filters: FiltroIntegranteDataDto
 ): Promise<ResponseIntegranteDto[]> {
 
@@ -74,7 +74,9 @@ async create(createIntegranteDto: CreateIntegranteDto, user: any): Promise<Integ
 
   const query = this.integranterepo
     .createQueryBuilder('integrante')
-    .leftJoinAndSelect('integrante.persona', 'persona');
+    .leftJoinAndSelect('integrante.persona', 'persona')
+    .leftJoinAndSelect('integrante.especialidad', 'especialidad')
+    .leftJoinAndSelect('especialidad.categoria', 'categoria');
 
   // Orden dinámico
   const sortField = filters.sort || 'integrante.creado_en';
@@ -82,7 +84,7 @@ async create(createIntegranteDto: CreateIntegranteDto, user: any): Promise<Integ
 
   query.orderBy(sortField, sortOrder);
 
-  // Búsqueda general (nombre, apellido, email, CI, teléfono)
+  // Búsqueda general
   if (filters.search) {
     query.andWhere(`
       persona.nombre ILIKE :search OR
@@ -127,8 +129,24 @@ async create(createIntegranteDto: CreateIntegranteDto, user: any): Promise<Integ
           documento_identidad: integrante.persona.documento_identidad,
         }
       : null,
+
+   especialidades: integrante.especialidades?.map(esp => ({
+  id: esp.id,
+  nombre: esp.nombre,
+  descripcion: esp.descripcion,
+  estado: esp.estado,
+  categoria: esp.categoria
+    ? {
+        id: esp.categoria.id,
+        nombre: esp.categoria.nombre,
+        icono: esp.categoria.icono,
+        estado: esp.categoria.estado
+      }
+    : null
+})) ?? []
   }));
 }
+ 
 
   async findOne(id: string): Promise<Integrante> {
     const usr = await this.integranterepo.findOne({
