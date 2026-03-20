@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Evento } from "../../eventos/entities/evento.entity";
 
 @Entity('categories_events')
@@ -26,13 +26,13 @@ export class Categoria {
   actualizado_por: string;
 
 
-  @Column({ type: 'timestamp', nullable: true })
+  @CreateDateColumn({ type: 'timestamp', nullable: true })
   creado_en: Date;
 
-  @Column({ type: 'timestamp', nullable: true})
+  @UpdateDateColumn({ type: 'timestamp', nullable: true})
   actualizado_en: Date;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @DeleteDateColumn({ type: 'timestamp', nullable: true })
   eliminado_en: Date;
 
 
