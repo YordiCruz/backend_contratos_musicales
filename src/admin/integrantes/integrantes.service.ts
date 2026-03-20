@@ -73,11 +73,14 @@ async findAll(
   const limit = filters.limit || 10;
 
   const query = this.integranterepo
-    .createQueryBuilder('integrante')
-    .leftJoinAndSelect('integrante.persona', 'persona')
-    .leftJoinAndSelect('integrante.especialidad', 'especialidad')
-    .leftJoinAndSelect('especialidad.categoria', 'categoria');
+  .createQueryBuilder('integrante')
+  .leftJoinAndSelect('integrante.persona', 'persona')
+  .leftJoinAndSelect('integrante.especialidadesAsignadas', 'ie')
+  .leftJoinAndSelect('ie.especialidad', 'especialidad')
+  .leftJoinAndSelect('especialidad.categoria', 'categoria');
 
+
+  
   // Orden dinámico
   const sortField = filters.sort || 'integrante.creado_en';
   const sortOrder = filters.order?.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
@@ -130,20 +133,22 @@ async findAll(
         }
       : null,
 
-   especialidades: integrante.especialidades?.map(esp => ({
-  id: esp.id,
-  nombre: esp.nombre,
-  descripcion: esp.descripcion,
-  estado: esp.estado,
-  categoria: esp.categoria
-    ? {
-        id: esp.categoria.id,
-        nombre: esp.categoria.nombre,
-        icono: esp.categoria.icono,
-        estado: esp.categoria.estado
-      }
-    : null
-})) ?? []
+ especialidades: integrante.especialidadesAsignadas
+  ?.filter(esp => esp.especialidad != null) // 👈 filtra los null
+  .map(esp => ({
+    id: esp.especialidad.id,
+    nombre: esp.especialidad.nombre,
+    descripcion: esp.especialidad.descripcion,
+    estado: esp.especialidad.estado,
+    categoria: esp.especialidad.categoria
+      ? {
+          id: esp.especialidad.categoria.id,
+          nombre: esp.especialidad.categoria.nombre,
+          icono: esp.especialidad.categoria.icono,
+          estado: esp.especialidad.categoria.estado
+        }
+      : null
+  })) ?? []
   }));
 }
  

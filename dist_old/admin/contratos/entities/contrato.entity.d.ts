@@ -1,0 +1,30 @@
+import { Ubicacion } from './ubicacion.entity';
+import { Pago } from './pago.entity';
+import { Client } from 'src/client/clients/entities/client.entity';
+import { Evento } from 'src/admin/eventos/eventos/entities/evento.entity';
+import { ContratoIntegrante } from './contrato-integrante.entity';
+import { ContratoReemplazo } from './contrato-reemplazo.entity';
+import { ContratoEspecialidad } from './contrato-especialidad.entity';
+export declare class Contrato {
+    id_contrato: string;
+    cliente: Client;
+    evento: Evento;
+    integrantes: ContratoIntegrante[];
+    reemplazos: ContratoReemplazo[];
+    ubicacion: Ubicacion;
+    fecha_evento: Date;
+    bloque: string;
+    hora_inicio: string;
+    hora_fin: string;
+    tipo_servicio: string;
+    horas_contratadas: number;
+    adelanto: number;
+    saldo: number;
+    admin_aprobacion: boolean;
+    fecha_adelanto: Date;
+    estado: string;
+    motivo_cancelacion: string;
+    creado_en: Date;
+    pagos: Pago[];
+    especialidades: ContratoEspecialidad[];
+}

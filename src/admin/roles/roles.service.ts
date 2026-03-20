@@ -25,7 +25,8 @@ export class RolesService {
   }
 
   async findAll() {
-    return this.rolerepo.find();
+    return this.rolerepo.find({
+      relations: ['permissions'],});
   }
 
  async assignRoles(userId: string, dto: AssignRolesDto) {

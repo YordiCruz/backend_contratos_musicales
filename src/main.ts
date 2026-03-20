@@ -27,24 +27,22 @@ async function bootstrap() {
   },
 });
 
-// if (process.env.SEED === 'true'){
+if (process.env.SEED === 'true') {
     const permissionsSeeder = app.get(PermissionsSeeder);
-await permissionsSeeder.run();
+    await permissionsSeeder.run();
 
-  const seeders = app.get(RolesSeeder);
-  await seeders.run();
+    const seeders = app.get(RolesSeeder);
+    await seeders.run();
 
-  const categoriaseeders = app.get(CategoriasEspecialidadSeeder);
-  await categoriaseeders.run();
+    const categoriaseeders = app.get(CategoriasEspecialidadSeeder);
+    await categoriaseeders.run();
 
-  const especialidadseeders = app.get(EspecialidadesSeeder);
-  await especialidadseeders.run();
+    const especialidadseeders = app.get(EspecialidadesSeeder);
+    await especialidadseeders.run();
 
-  const servicioespecialidadseeders = app.get(ServicioEspecialidadSeeder);
-  await servicioespecialidadseeders.run();
-
-
-// }
+    const servicioespecialidadseeders = app.get(ServicioEspecialidadSeeder);
+    await servicioespecialidadseeders.run();
+}
 
 app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));
 

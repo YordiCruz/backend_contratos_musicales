@@ -1,0 +1,43 @@
+"use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.CreateIntegranteDataDto = void 0;
+const openapi = require("@nestjs/swagger");
+const class_validator_1 = require("class-validator");
+class CreateIntegranteDataDto {
+    tarifa_base_hora;
+    moneda;
+    fecha_ingreso;
+    estado;
+    static _OPENAPI_METADATA_FACTORY() {
+        return { tarifa_base_hora: { required: true, type: () => Number }, moneda: { required: true, type: () => String, enum: ['USD', 'BOB'] }, fecha_ingreso: { required: true, type: () => String }, estado: { required: true, type: () => String, enum: ['activo', 'inactivo', 'suspendido'] } };
+    }
+}
+exports.CreateIntegranteDataDto = CreateIntegranteDataDto;
+__decorate([
+    (0, class_validator_1.IsNumber)({ maxDecimalPlaces: 2 }),
+    __metadata("design:type", Number)
+], CreateIntegranteDataDto.prototype, "tarifa_base_hora", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsIn)(['USD', 'BOB']),
+    __metadata("design:type", String)
+], CreateIntegranteDataDto.prototype, "moneda", void 0);
+__decorate([
+    (0, class_validator_1.IsDateString)(),
+    __metadata("design:type", String)
+], CreateIntegranteDataDto.prototype, "fecha_ingreso", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsIn)(['activo', 'inactivo', 'suspendido']),
+    __metadata("design:type", String)
+], CreateIntegranteDataDto.prototype, "estado", void 0);
+//# sourceMappingURL=create-integrante-data.dto.js.map
