@@ -18,10 +18,7 @@ export class Client {
 
   @Column({ type: 'varchar', length: 20, default: 'web' })
   origen_registro: string; // web | admin | bot
-
-  @Column({ type: 'varchar', length: 20, default: 'normal' })
-  categoria: string; // normal | vip | frecuente
-
+  
   @Column({ type: 'varchar', length: 20, nullable: true })
   preferencia_contacto: string; // whatsapp | email 
 

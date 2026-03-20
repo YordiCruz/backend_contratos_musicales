@@ -11,10 +11,6 @@ export class CreateClientDataDto {
   @IsIn(['web', 'admin', 'bot'])
   origen_registro: string;
 
-  @IsString()
-  @IsIn(['normal', 'vip', 'frecuente'])
-  categoria: string;
-
   @IsOptional()
   @IsString()
   @IsIn(['whatsapp', 'email'])

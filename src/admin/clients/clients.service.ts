@@ -99,7 +99,6 @@ export class ClientsService {
     id: cliente.id,
     tipo_cliente: cliente.tipo_cliente,
     origen_registro: cliente.origen_registro,
-    categoria: cliente.categoria,
     preferencia_contacto: cliente.preferencia_contacto,
     estado: cliente.estado,
     creado_en: cliente.creado_en,
@@ -159,7 +158,6 @@ export class ClientsService {
  
      return {
        id: saved.id,
-       categoria: saved.categoria,
        preferencia_contacto: saved.preferencia_contacto,
        estado: saved.estado,
      }
