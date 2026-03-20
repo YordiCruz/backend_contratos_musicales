@@ -23,6 +23,7 @@ let Persona = class Persona {
     documento_identidad;
     email;
     telefono;
+    estado;
     creado_en;
     actualizado_en;
     user;
@@ -30,7 +31,7 @@ let Persona = class Persona {
     integrante;
     reemplazo;
     static _OPENAPI_METADATA_FACTORY() {
-        return { id: { required: true, type: () => String }, nombre: { required: true, type: () => String }, apellido: { required: true, type: () => String }, documento_identidad: { required: true, type: () => String }, email: { required: true, type: () => String }, telefono: { required: true, type: () => String }, creado_en: { required: true, type: () => Date }, actualizado_en: { required: true, type: () => Date }, user: { required: true, type: () => require("../../users/entities/user.entity").User }, cliente: { required: true, type: () => require("../../../client/clients/entities/client.entity").Client }, integrante: { required: true, type: () => require("../../integrantes/entities/integrante.entity").Integrante }, reemplazo: { required: true, type: () => require("../../reemplazos/entities/reemplazo.entity").Reemplazo } };
+        return { id: { required: true, type: () => String }, nombre: { required: true, type: () => String }, apellido: { required: true, type: () => String }, documento_identidad: { required: true, type: () => String }, email: { required: true, type: () => String }, telefono: { required: true, type: () => String }, estado: { required: true, type: () => String }, creado_en: { required: true, type: () => Date }, actualizado_en: { required: true, type: () => Date }, user: { required: true, type: () => require("../../users/entities/user.entity").User }, cliente: { required: true, type: () => require("../../../client/clients/entities/client.entity").Client }, integrante: { required: true, type: () => require("../../integrantes/entities/integrante.entity").Integrante }, reemplazo: { required: true, type: () => require("../../reemplazos/entities/reemplazo.entity").Reemplazo } };
     }
 };
 exports.Persona = Persona;
@@ -79,6 +80,10 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], Persona.prototype, "telefono", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'varchar', length: 20, default: 'activo' }),
+    __metadata("design:type", String)
+], Persona.prototype, "estado", void 0);
 __decorate([
     (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)

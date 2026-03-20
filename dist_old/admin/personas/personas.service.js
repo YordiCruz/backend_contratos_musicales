@@ -56,7 +56,8 @@ let PersonasService = class PersonasService {
             apellido: person.apellido,
             documento_identidad: person.documento_identidad,
             email: person.email,
-            telefono: person.telefono
+            telefono: person.telefono,
+            estado: person.estado
         }));
     }
     async findOne(id) {

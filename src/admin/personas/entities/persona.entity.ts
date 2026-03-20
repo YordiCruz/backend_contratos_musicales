@@ -52,6 +52,9 @@ export class Persona {
   })
   telefono: string;
 
+  
+ @Column({type: 'varchar', length: 20, default: 'activo'})
+    estado: string
   @CreateDateColumn()
   creado_en: Date;
 

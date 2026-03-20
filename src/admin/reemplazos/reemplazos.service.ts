@@ -75,7 +75,11 @@ export class ReemplazosService {
   
     const query = this.reemplazoRepo
       .createQueryBuilder('reemplazo')
-      .leftJoinAndSelect('reemplazo.persona', 'persona');
+      .leftJoinAndSelect('reemplazo.persona', 'persona')
+      .leftJoinAndSelect('reemplazo.especialidadesAsignadas', 're')
+      .leftJoinAndSelect('re.especialidad', 'especialidad')
+      .leftJoinAndSelect('especialidad.categoria', 'categoria');
+
   
     // Orden dinámico
     const sortField = filters.sort || 'reemplazo.creado_en';
@@ -128,7 +132,28 @@ export class ReemplazosService {
             documento_identidad: reemplazo.persona.documento_identidad,
           }
         : null,
+
+        especialidades: reemplazo.especialidadesAsignadas
+  ?.filter(re => re.especialidad) // 👈 evita null
+  .map(re => ({
+    id: re.especialidad.id,
+    nombre: re.especialidad.nombre,
+    descripcion: re.especialidad.descripcion,
+    estado: re.especialidad.estado,
+    categoria: re.especialidad.categoria
+      ? {
+          id: re.especialidad.categoria.id,
+          nombre: re.especialidad.categoria.nombre,
+          icono: re.especialidad.categoria.icono,
+          estado: re.especialidad.categoria.estado,
+        }
+      : null
+  })) ?? []
+
+
     }));
+
+    
   }
   
     async findOne(id: string): Promise<Reemplazo> {
