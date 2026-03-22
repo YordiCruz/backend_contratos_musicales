@@ -4,6 +4,7 @@ import { MediaModule } from './media/media.module';
 import { EventsModule } from './eventos/events.module';
 
 @Module({
-  imports: [CategoriasModule, MediaModule, EventsModule]
+  imports: [CategoriasModule, MediaModule, EventsModule],
+  exports: [CategoriasModule, MediaModule, EventsModule]
 })
 export class EventosModule{}

@@ -5,12 +5,10 @@ const openapi = require("@nestjs/swagger");
 class UpdateResponseDto {
     id;
     categoria;
-    descuentos;
-    contacto_secundario;
     preferencia_contacto;
     estado;
     static _OPENAPI_METADATA_FACTORY() {
-        return { id: { required: true, type: () => String }, categoria: { required: true, type: () => String }, descuentos: { required: true, type: () => Number }, contacto_secundario: { required: true, type: () => String }, preferencia_contacto: { required: true, type: () => String }, estado: { required: true, type: () => String } };
+        return { id: { required: true, type: () => String }, categoria: { required: true, type: () => String }, preferencia_contacto: { required: true, type: () => String }, estado: { required: true, type: () => String } };
     }
 }
 exports.UpdateResponseDto = UpdateResponseDto;

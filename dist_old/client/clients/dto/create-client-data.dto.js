@@ -16,14 +16,10 @@ class CreateClientDataDto {
     tipo_cliente;
     origen_registro;
     categoria;
-    saldo_pendiente;
-    limite_credito;
-    descuentos;
-    contacto_secundario;
     preferencia_contacto;
     estado;
     static _OPENAPI_METADATA_FACTORY() {
-        return { tipo_cliente: { required: true, type: () => String, enum: ['individual', 'empresa'] }, origen_registro: { required: true, type: () => String, enum: ['web', 'admin', 'bot'] }, categoria: { required: true, type: () => String, enum: ['normal', 'vip', 'frecuente'] }, saldo_pendiente: { required: false, type: () => Number }, limite_credito: { required: false, type: () => Number }, descuentos: { required: false, type: () => Number }, contacto_secundario: { required: false, type: () => String }, preferencia_contacto: { required: false, type: () => String, enum: ['whatsapp', 'email', 'telefono'] }, estado: { required: false, type: () => String, enum: ['activo', 'inactivo', 'bloqueado'] } };
+        return { tipo_cliente: { required: true, type: () => String, enum: ['individual', 'empresa'] }, origen_registro: { required: true, type: () => String, enum: ['web', 'admin', 'bot'] }, categoria: { required: true, type: () => String, enum: ['normal', 'vip', 'frecuente'] }, preferencia_contacto: { required: false, type: () => String, enum: ['whatsapp', 'email'] }, estado: { required: false, type: () => String, enum: ['activo', 'inactivo', 'bloqueado'] } };
     }
 }
 exports.CreateClientDataDto = CreateClientDataDto;
@@ -43,26 +39,9 @@ __decorate([
     __metadata("design:type", String)
 ], CreateClientDataDto.prototype, "categoria", void 0);
 __decorate([
-    (0, class_validator_1.IsNumber)({ maxDecimalPlaces: 2 }),
-    __metadata("design:type", Number)
-], CreateClientDataDto.prototype, "saldo_pendiente", void 0);
-__decorate([
-    (0, class_validator_1.IsNumber)({ maxDecimalPlaces: 2 }),
-    __metadata("design:type", Number)
-], CreateClientDataDto.prototype, "limite_credito", void 0);
-__decorate([
-    (0, class_validator_1.IsNumber)({ maxDecimalPlaces: 2 }),
-    __metadata("design:type", Number)
-], CreateClientDataDto.prototype, "descuentos", void 0);
-__decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], CreateClientDataDto.prototype, "contacto_secundario", void 0);
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsIn)(['whatsapp', 'email', 'telefono']),
+    (0, class_validator_1.IsIn)(['whatsapp', 'email']),
     __metadata("design:type", String)
 ], CreateClientDataDto.prototype, "preferencia_contacto", void 0);
 __decorate([

@@ -31,7 +31,7 @@ let CategoriasService = class CategoriasService {
         }
         const cat = this.caterepo.create({
             ...createCategoriaDto,
-            creado_por: req.user.id,
+            creado_por: req.id,
         });
         return this.caterepo.save(cat);
     }
@@ -47,18 +47,25 @@ let CategoriasService = class CategoriasService {
         }
         return categoria;
     }
-    async update(id, updateCategoriaDto, req) {
-        await this.caterepo.update(id, {
-            ...updateCategoriaDto,
-            actualizado_por: req.user.id
+    async update(id, dto, user) {
+        if (dto.estado) {
+            await this.caterepo.update({ id_categoria: id }, {
+                estado: dto.estado,
+                actualizado_por: user.id,
+                actualizado_en: new Date()
+            });
+            return { message: `Estado cambiado a ${dto.estado}` };
+        }
+        await this.caterepo.update({ id_categoria: id }, {
+            ...dto,
+            actualizado_por: user.id,
+            actualizado_en: new Date()
         });
-        return this.caterepo.findOne({
-            where: { id_categoria: id }
-        });
+        return this.caterepo.findOne({ where: { id_categoria: id } });
     }
-    async remove(id) {
-        await this.caterepo.update(id, { estado: 'inactivo' });
-        await this.caterepo.softDelete(id);
+    async removes(id) {
+        console.log('BUSCANDO:', await this.caterepo.findOne({ where: { id_categoria: id } }));
+        await this.caterepo.update({ id_categoria: id }, { estado: 'inactivo' });
         return { message: 'Categoria desactivada correctamente' };
     }
 };

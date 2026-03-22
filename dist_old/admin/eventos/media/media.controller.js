@@ -16,54 +16,69 @@ exports.MediaController = void 0;
 const openapi = require("@nestjs/swagger");
 const common_1 = require("@nestjs/common");
 const media_service_1 = require("./media.service");
-const update_media_dto_1 = require("./dto/update-media.dto");
+const platform_express_1 = require("@nestjs/platform-express");
+const media_upload_config_1 = require("./media-upload-config");
 let MediaController = class MediaController {
     mediaService;
     constructor(mediaService) {
         this.mediaService = mediaService;
     }
-    findAll() {
-        return this.mediaService.findAll();
+    uploadMedia(id_evento, files) {
+        return this.mediaService.createMany(id_evento, files);
     }
-    findOne(id) {
-        return this.mediaService.findOne(id);
+    findByEvento(id_evento) {
+        return this.mediaService.findByEvento(id_evento);
     }
-    update(id, updateMediaDto) {
-        return this.mediaService.update(id, updateMediaDto);
+    findOne(id_media) {
+        return this.mediaService.findOne(id_media);
     }
-    remove(id) {
-        return this.mediaService.remove(id);
+    changeVisibility(id_media, visible) {
+        return this.mediaService.changeVisibility(id_media, visible);
+    }
+    remove(id_media) {
+        return this.mediaService.remove(id_media);
     }
 };
 exports.MediaController = MediaController;
 __decorate([
-    (0, common_1.Get)(),
-    openapi.ApiResponse({ status: 200, type: [require("./entities/media.entity").Media] }),
+    (0, common_1.Post)(':id_evento'),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FilesInterceptor)('files', 10, media_upload_config_1.mediaUploadConfig)),
+    openapi.ApiResponse({ status: 201, type: [require("./entities/media.entity").Media] }),
+    __param(0, (0, common_1.Param)('id_evento')),
+    __param(1, (0, common_1.UploadedFiles)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [String, Array]),
     __metadata("design:returntype", void 0)
-], MediaController.prototype, "findAll", null);
+], MediaController.prototype, "uploadMedia", null);
 __decorate([
-    (0, common_1.Get)(':id'),
+    (0, common_1.Get)('evento/:id_evento'),
+    openapi.ApiResponse({ status: 200 }),
+    __param(0, (0, common_1.Param)('id_evento')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], MediaController.prototype, "findByEvento", null);
+__decorate([
+    (0, common_1.Get)(':id_media'),
     openapi.ApiResponse({ status: 200, type: require("./entities/media.entity").Media }),
-    __param(0, (0, common_1.Param)('id')),
+    __param(0, (0, common_1.Param)('id_media')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], MediaController.prototype, "findOne", null);
 __decorate([
-    (0, common_1.Patch)(':id'),
+    (0, common_1.Patch)('visibilidad/:id_media'),
     openapi.ApiResponse({ status: 200, type: require("./entities/media.entity").Media }),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Body)()),
+    __param(0, (0, common_1.Param)('id_media')),
+    __param(1, (0, common_1.Body)('visible')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, update_media_dto_1.UpdateMediaDto]),
+    __metadata("design:paramtypes", [String, Boolean]),
     __metadata("design:returntype", void 0)
-], MediaController.prototype, "update", null);
+], MediaController.prototype, "changeVisibility", null);
 __decorate([
-    (0, common_1.Delete)(':id'),
+    (0, common_1.Delete)(':id_media'),
     openapi.ApiResponse({ status: 200 }),
-    __param(0, (0, common_1.Param)('id')),
+    __param(0, (0, common_1.Param)('id_media')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)

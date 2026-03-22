@@ -17,7 +17,7 @@ const openapi = require("@nestjs/swagger");
 const common_1 = require("@nestjs/common");
 const categorias_service_1 = require("./categorias.service");
 const create_categoria_dto_1 = require("./dto/create-categoria.dto");
-const update_categoria_dto_1 = require("./dto/update-categoria.dto");
+const admin_jwt_guard_1 = require("../../../auth/admin-auth/guards/admin-jwt.guard");
 let CategoriasController = class CategoriasController {
     categoriasService;
     constructor(categoriasService) {
@@ -32,11 +32,11 @@ let CategoriasController = class CategoriasController {
     findOne(id) {
         return this.categoriasService.findOne(id);
     }
-    update(id, updateCategoriaDto, req) {
-        return this.categoriasService.update(id, updateCategoriaDto, req.user);
+    update(id, body, req) {
+        return this.categoriasService.update(id, body, req.user);
     }
     remove(id) {
-        return this.categoriasService.remove(id);
+        return this.categoriasService.removes(id);
     }
 };
 exports.CategoriasController = CategoriasController;
@@ -71,7 +71,7 @@ __decorate([
     __param(1, (0, common_1.Body)()),
     __param(2, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, update_categoria_dto_1.UpdateCategoriaDto, Object]),
+    __metadata("design:paramtypes", [String, Object, Object]),
     __metadata("design:returntype", void 0)
 ], CategoriasController.prototype, "update", null);
 __decorate([
@@ -83,6 +83,7 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], CategoriasController.prototype, "remove", null);
 exports.CategoriasController = CategoriasController = __decorate([
+    (0, common_1.UseGuards)(admin_jwt_guard_1.AdminJwtGuard),
     (0, common_1.Controller)('categorias'),
     __metadata("design:paramtypes", [categorias_service_1.CategoriasService])
 ], CategoriasController);

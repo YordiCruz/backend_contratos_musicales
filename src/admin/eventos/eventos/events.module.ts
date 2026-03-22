@@ -8,7 +8,8 @@ import { Categoria } from '../categorias/entities/categoria.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Evento, Media, Categoria])],
-  controllers: [EventosController],
+  //controllers: [EventosController],
   providers: [EventosService],
+  exports: [EventosService],
 })
 export class EventsModule {}

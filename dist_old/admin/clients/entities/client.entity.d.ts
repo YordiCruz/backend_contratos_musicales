@@ -6,7 +6,6 @@ export declare class Client {
     persona: Persona;
     tipo_cliente: string;
     origen_registro: string;
-    categoria: string;
     preferencia_contacto: string;
     contratos: Contrato[];
     registrado_por: User;

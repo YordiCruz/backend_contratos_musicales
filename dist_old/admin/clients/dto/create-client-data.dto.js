@@ -15,11 +15,10 @@ const class_validator_1 = require("class-validator");
 class CreateClientDataDto {
     tipo_cliente;
     origen_registro;
-    categoria;
     preferencia_contacto;
     estado;
     static _OPENAPI_METADATA_FACTORY() {
-        return { tipo_cliente: { required: true, type: () => String, enum: ['individual', 'empresa'] }, origen_registro: { required: true, type: () => String, enum: ['web', 'admin', 'bot'] }, categoria: { required: true, type: () => String, enum: ['normal', 'vip', 'frecuente'] }, preferencia_contacto: { required: false, type: () => String, enum: ['whatsapp', 'email'] }, estado: { required: false, type: () => String, enum: ['activo', 'inactivo', 'bloqueado'] } };
+        return { tipo_cliente: { required: true, type: () => String, enum: ['individual', 'empresa'] }, origen_registro: { required: true, type: () => String, enum: ['web', 'admin', 'bot'] }, preferencia_contacto: { required: false, type: () => String, enum: ['whatsapp', 'email'] }, estado: { required: false, type: () => String, enum: ['activo', 'inactivo', 'bloqueado'] } };
     }
 }
 exports.CreateClientDataDto = CreateClientDataDto;
@@ -33,11 +32,6 @@ __decorate([
     (0, class_validator_1.IsIn)(['web', 'admin', 'bot']),
     __metadata("design:type", String)
 ], CreateClientDataDto.prototype, "origen_registro", void 0);
-__decorate([
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsIn)(['normal', 'vip', 'frecuente']),
-    __metadata("design:type", String)
-], CreateClientDataDto.prototype, "categoria", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),

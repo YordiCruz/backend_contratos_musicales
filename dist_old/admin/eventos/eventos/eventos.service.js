@@ -31,52 +31,30 @@ let EventosService = class EventosService {
         this.mediaRepo = mediaRepo;
         this.dataSource = dataSource;
     }
-    async createEventoConMedia(dto, medias) {
-        try {
-            return await this.dataSource.transaction(async (manager) => {
-                const categoria = await manager.findOne(categoria_entity_1.Categoria, {
-                    where: { id_categoria: dto.id_categoria },
-                });
-                if (!categoria) {
-                    throw new common_1.NotFoundException('Categoría no encontrada');
-                }
-                const existingEvento = await manager.findOne(evento_entity_1.Evento, {
-                    where: { nombre: dto.nombre },
-                });
-                if (existingEvento) {
-                    throw new Error(`Ya existe un evento con el nombre "${dto.nombre}"`);
-                }
-                const evento = manager.create(evento_entity_1.Evento, {
-                    nombre: dto.nombre,
-                    descripcion: dto.descripcion,
-                    precio_base: dto.precio_base,
-                    descuento: dto.descuento ?? 0,
-                    categoria,
-                });
-                await manager.save(evento);
-                if (medias && medias.length > 0) {
-                    const mediaEntities = medias.map((m) => manager.create(media_entity_1.Media, {
-                        tipo: m.tipo,
-                        url: m.url,
-                        descripcion: m.descripcion,
-                        orden: m.orden,
-                        visibilidad_publica: m.visibilidad_publica ?? true,
-                        evento,
-                    }));
-                    await manager.save(mediaEntities);
-                }
-                return manager.findOne(evento_entity_1.Evento, {
-                    where: { id_evento: evento.id_evento },
-                    relations: ['categoria', 'media'],
-                });
-            });
+    async create(dto) {
+        const categoria = await this.categoriaRepo.findOne({
+            where: { id_categoria: dto.id_categoria },
+        });
+        if (!categoria)
+            throw new common_1.NotFoundException('Categoría no encontrada');
+        const existing = await this.repo.findOne({
+            where: { nombre: dto.nombre },
+        });
+        if (existing) {
+            throw new Error(`Ya existe un evento con el nombre "${dto.nombre}"`);
         }
-        catch (error) {
-            throw new Error(`Error al crear evento con media: ${error.message}`);
-        }
+        const evento = this.repo.create({
+            nombre: dto.nombre,
+            descripcion: dto.descripcion,
+            precio_base: dto.precio_base,
+            categoria,
+        });
+        return this.repo.save(evento);
     }
     findAll() {
-        return this.repo.find({ relations: ['categoria', 'media'] });
+        return this.repo.find({
+            relations: ['categoria', 'media'],
+        });
     }
     findOne(id) {
         return this.repo.findOne({
@@ -84,52 +62,33 @@ let EventosService = class EventosService {
             relations: ['categoria', 'media'],
         });
     }
-    async updateEventoConMedia(id_evento, dto, medias, replaceAll = true) {
-        return this.dataSource.transaction(async (manager) => {
-            const evento = await manager.findOne(evento_entity_1.Evento, {
-                where: { id_evento },
-                relations: ['media'],
-            });
-            if (!evento)
-                throw new common_1.NotFoundException('Evento no encontrado');
-            manager.merge(evento_entity_1.Evento, evento, {
-                nombre: dto.nombre,
-                descripcion: dto.descripcion,
-                precio_base: Number(dto.precio_base),
-                descuento: dto.descuento ? Number(dto.descuento) : 0,
-            });
-            await manager.save(evento);
-            if (medias && medias.length > 0) {
-                if (replaceAll) {
-                    if (evento.media?.length) {
-                        evento.media.forEach((m) => {
-                            try {
-                                (0, fs_1.unlinkSync)(`.${m.url}`);
-                            }
-                            catch (e) {
-                                console.error('Error borrando archivo viejo:', e.message);
-                            }
-                        });
-                    }
-                    await manager.delete(media_entity_1.Media, { evento });
-                    const nuevasMedias = medias.map((m) => manager.create(media_entity_1.Media, { ...m, evento }));
-                    await manager.save(nuevasMedias);
-                }
-                else {
-                    for (const nueva of medias) {
-                        const existente = evento.media.find((m) => m.url === nueva.url);
-                        if (!existente) {
-                            const mediaEntity = manager.create(media_entity_1.Media, { ...nueva, evento });
-                            await manager.save(mediaEntity);
-                        }
-                    }
-                }
-            }
-            return manager.findOne(evento_entity_1.Evento, {
-                where: { id_evento },
-                relations: ['categoria', 'media'],
-            });
+    async update(id_evento, dto) {
+        const evento = await this.repo.findOne({
+            where: { id_evento },
         });
+        if (!evento)
+            throw new common_1.NotFoundException('Evento no encontrado');
+        if (dto.id_categoria) {
+            const categoria = await this.categoriaRepo.findOne({
+                where: { id_categoria: dto.id_categoria },
+            });
+            if (!categoria)
+                throw new common_1.NotFoundException('Categoría no encontrada');
+            evento.categoria = categoria;
+        }
+        this.repo.merge(evento, {
+            nombre: dto.nombre,
+            descripcion: dto.descripcion,
+            precio_base: Number(dto.precio_base),
+        });
+        return this.repo.save(evento);
+    }
+    async changeEstado(id_evento, estado) {
+        const evento = await this.repo.findOne({ where: { id_evento } });
+        if (!evento)
+            throw new common_1.NotFoundException('Evento no encontrado');
+        evento.estado = estado;
+        return this.repo.save(evento);
     }
     async remove(id_evento) {
         return this.dataSource.transaction(async (manager) => {

@@ -25,7 +25,7 @@ export class CategoriasService {
 
       const cat = this.caterepo.create({
       ...createCategoriaDto,
-      creado_por: req.user.id,
+      creado_por: req.id,
     });
 
   
@@ -51,27 +51,49 @@ export class CategoriasService {
 
   }
 
-  async update(id: string, updateCategoriaDto: UpdateCategoriaDto, req: any) {
+async update(id: string, dto: any, user: any) {
+
+  // Si solo viene estado, cambiar estado
+  if (dto.estado) {
     await this.caterepo.update(
-      id, 
+      { id_categoria: id },
       {
-      ...updateCategoriaDto, 
-      actualizado_por: req.user.id }
-    )
+        estado: dto.estado,
+        actualizado_por: user.id,
+        actualizado_en: new Date()
+      }
+    );
 
-    return this.caterepo.findOne({
-      where: { id_categoria: id }
-    });
-
+    return { message: `Estado cambiado a ${dto.estado}` };
   }
 
-  async remove(id: string) {
+  // Si vienen datos normales, actualizar datos
+  await this.caterepo.update(
+    { id_categoria: id },
+    {
+      ...dto,
+      actualizado_por: user.id,
+      actualizado_en: new Date()
+    }
+  );
 
-    await this.caterepo.update(id, {estado: 'inactivo'});
+  return this.caterepo.findOne({ where: { id_categoria: id } });
+}
+ 
+  async removes(id: string) {
 
-    await this.caterepo.softDelete(id);
+    console.log('BUSCANDO:', await this.caterepo.findOne({ where: { id_categoria: id } }));
 
-    return { message: 'Categoria desactivada correctamente' };
+  // 1. Cambiar estado
+  await this.caterepo.update(
+    { id_categoria: id },
+    { estado: 'inactivo' }
+  );
 
-  }
+  // 2. Soft delete real
+  // await this.caterepo.softDelete({ id_categoria: id });
+
+  return { message: 'Categoria desactivada correctamente' };
+}
+
 }

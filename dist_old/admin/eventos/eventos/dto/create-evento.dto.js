@@ -18,9 +18,8 @@ class CreateEventoDto {
     nombre;
     descripcion;
     precio_base;
-    descuento;
     static _OPENAPI_METADATA_FACTORY() {
-        return { id_categoria: { required: true, type: () => String, format: "uuid" }, nombre: { required: true, type: () => String }, descripcion: { required: false, type: () => String }, precio_base: { required: true, type: () => Number }, descuento: { required: false, type: () => Number } };
+        return { id_categoria: { required: true, type: () => String, format: "uuid" }, nombre: { required: true, type: () => String }, descripcion: { required: false, type: () => String }, precio_base: { required: true, type: () => Number } };
     }
 }
 exports.CreateEventoDto = CreateEventoDto;
@@ -44,10 +43,4 @@ __decorate([
     (0, class_validator_1.IsNumber)(),
     __metadata("design:type", Number)
 ], CreateEventoDto.prototype, "precio_base", void 0);
-__decorate([
-    (0, class_transformer_1.Type)(() => Number),
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsNumber)(),
-    __metadata("design:type", Number)
-], CreateEventoDto.prototype, "descuento", void 0);
 //# sourceMappingURL=create-evento.dto.js.map

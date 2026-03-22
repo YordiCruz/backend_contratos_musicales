@@ -58,15 +58,15 @@ __decorate([
     __metadata("design:type", String)
 ], Categoria.prototype, "actualizado_por", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'timestamp', nullable: true }),
+    (0, typeorm_1.CreateDateColumn)({ type: 'timestamp', nullable: true }),
     __metadata("design:type", Date)
 ], Categoria.prototype, "creado_en", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'timestamp', nullable: true }),
+    (0, typeorm_1.UpdateDateColumn)({ type: 'timestamp', nullable: true }),
     __metadata("design:type", Date)
 ], Categoria.prototype, "actualizado_en", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'timestamp', nullable: true }),
+    (0, typeorm_1.DeleteDateColumn)({ type: 'timestamp', nullable: true }),
     __metadata("design:type", Date)
 ], Categoria.prototype, "eliminado_en", void 0);
 exports.Categoria = Categoria = __decorate([

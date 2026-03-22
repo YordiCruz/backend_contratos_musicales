@@ -3,7 +3,6 @@ export declare class ClientResponseDto {
     id: string;
     tipo_cliente: string;
     origen_registro: string;
-    categoria: string;
     preferencia_contacto: string;
     estado: string;
     creado_en: Date;

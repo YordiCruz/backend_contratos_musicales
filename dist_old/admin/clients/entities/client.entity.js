@@ -20,7 +20,6 @@ let Client = class Client {
     persona;
     tipo_cliente;
     origen_registro;
-    categoria;
     preferencia_contacto;
     contratos;
     registrado_por;
@@ -29,7 +28,7 @@ let Client = class Client {
     eliminado_en;
     estado;
     static _OPENAPI_METADATA_FACTORY() {
-        return { id: { required: true, type: () => String }, persona: { required: true, type: () => require("../../personas/entities/persona.entity").Persona }, tipo_cliente: { required: true, type: () => String }, origen_registro: { required: true, type: () => String }, categoria: { required: true, type: () => String }, preferencia_contacto: { required: true, type: () => String }, contratos: { required: true, type: () => [require("../../contratos/entities/contrato.entity").Contrato] }, registrado_por: { required: true, type: () => require("../../users/entities/user.entity").User }, creado_en: { required: true, type: () => Date }, actualizado_en: { required: true, type: () => Date }, eliminado_en: { required: true, type: () => Date, nullable: true }, estado: { required: true, type: () => String } };
+        return { id: { required: true, type: () => String }, persona: { required: true, type: () => require("../../personas/entities/persona.entity").Persona }, tipo_cliente: { required: true, type: () => String }, origen_registro: { required: true, type: () => String }, preferencia_contacto: { required: true, type: () => String }, contratos: { required: true, type: () => [require("../../contratos/entities/contrato.entity").Contrato] }, registrado_por: { required: true, type: () => require("../../users/entities/user.entity").User }, creado_en: { required: true, type: () => Date }, actualizado_en: { required: true, type: () => Date }, eliminado_en: { required: true, type: () => Date, nullable: true }, estado: { required: true, type: () => String } };
     }
 };
 exports.Client = Client;
@@ -50,10 +49,6 @@ __decorate([
     (0, typeorm_1.Column)({ type: 'varchar', length: 20, default: 'web' }),
     __metadata("design:type", String)
 ], Client.prototype, "origen_registro", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', length: 20, default: 'normal' }),
-    __metadata("design:type", String)
-], Client.prototype, "categoria", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'varchar', length: 20, nullable: true }),
     __metadata("design:type", String)

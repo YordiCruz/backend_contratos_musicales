@@ -72,10 +72,6 @@ let ClientsService = class ClientsService {
             tipo_cliente: cliente.tipo_cliente,
             origen_registro: cliente.origen_registro,
             categoria: cliente.categoria,
-            saldo_pendiente: cliente.saldo_pendiente,
-            limite_credito: cliente.limite_credito,
-            descuentos: cliente.descuentos,
-            contacto_secundario: cliente.contacto_secundario,
             preferencia_contacto: cliente.preferencia_contacto,
             estado: cliente.estado,
             creado_en: cliente.creado_en,
@@ -119,8 +115,6 @@ let ClientsService = class ClientsService {
         return {
             id: saved.id,
             categoria: saved.categoria,
-            descuentos: saved.descuentos,
-            contacto_secundario: saved.contacto_secundario,
             preferencia_contacto: saved.preferencia_contacto,
             estado: saved.estado,
         };

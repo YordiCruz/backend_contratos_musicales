@@ -20,11 +20,17 @@ import { EventosModule } from './eventos/eventos.module';
 import { DisponibilidadEventosModule } from './disponibilidad-eventos/disponibilidad-eventos.module';
 import { NotificacionesModule } from './notificaciones/notificaciones.module';
 import { EmailModule } from './email/email.module';
+import { ClientsModule } from './clients/clients.module';
+import { ClientsController } from './clients/clients.controller';
+import { CategoriasController } from './eventos/categorias/categorias.controller';
+import { EventosController } from './eventos/eventos/eventos.controller';
+import { MediaController } from './eventos/media/media.controller';
 
 @Module({
     imports: [
     UsersModule,
     RolesModule,
+    ClientsModule,
     PermissionsModule,
     PersonasModule,
     EspecialidadesModule,
@@ -41,12 +47,16 @@ import { EmailModule } from './email/email.module';
 controllers:[
     UsersController,
     RolesController,
+    ClientsController,
     PersonasController,
     ReemplazosController,
     EspecialidadsController,
     IntegrantesController,
     CategoriasEspecialidadsController,
     AdminAuthController,
+    CategoriasController,
+    EventosController,
+    MediaController
 
 ]
 

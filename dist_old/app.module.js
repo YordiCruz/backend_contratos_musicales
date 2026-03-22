@@ -17,6 +17,8 @@ const database_module_1 = require("./database/database.module");
 const throttler_1 = require("@nestjs/throttler");
 const core_1 = require("@nestjs/core");
 const client_module_1 = require("./client/client.module");
+const serve_static_1 = require("@nestjs/serve-static");
+const path_1 = require("path");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -40,6 +42,10 @@ exports.AppModule = AppModule = __decorate([
                 database: process.env.DB_DATABASE,
                 entities: [__dirname + '/**/*.entity{.ts,.js}'],
                 synchronize: true,
+            }),
+            serve_static_1.ServeStaticModule.forRoot({
+                rootPath: (0, path_1.join)(__dirname, '..', 'uploads'),
+                serveRoot: '/uploads',
             }),
             admin_module_1.AdminModule,
             client_module_1.ClientModule,

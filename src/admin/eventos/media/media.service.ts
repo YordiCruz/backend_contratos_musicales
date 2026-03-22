@@ -1,64 +1,105 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateMediaDto } from './dto/create-media.dto';
-import { UpdateMediaDto } from './dto/update-media.dto';
 import { unlinkSync } from 'fs';
 import { Media } from './entities/media.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Evento } from '../eventos/entities/evento.entity';
+import { join } from 'path';
 
 @Injectable()
 export class MediaService {
-
   constructor(
     @InjectRepository(Media)
-    private readonly mediaRepo: Repository<Media>
+    private readonly mediaRepo: Repository<Media>,
 
+    @InjectRepository(Evento)
+    private readonly eventoRepo: Repository<Evento>,
   ) {}
 
-   // Obtener todas las medias
-  findAll() {
-    return this.mediaRepo.find({ relations: ['evento'] });
+  // ============================
+  // CREAR VARIAS MEDIA PARA UN EVENTO
+  // ============================
+  async createMany(id_evento: string, files: Express.Multer.File[]) {
+    const evento = await this.eventoRepo.findOne({
+      where: { id_evento },
+    });
+
+    if (!evento) throw new NotFoundException('Evento no encontrado');
+
+    const medias = files.map((file, index) =>
+      this.mediaRepo.create({
+        id_evento,
+        tipo: file.mimetype.startsWith('video') ? 'video' : 'imagen',
+        //url para que el frontend pueda visualizar el archivo
+        url: `http://localhost:3070/uploads/${file.filename}`,
+        descripcion: null,
+        orden: index + 1,
+        visibilidad_publica: true,
+      }),
+    );
+
+    return this.mediaRepo.save(medias);
   }
 
-
-  // Obtener una media específica
+  // ============================
+  // LISTAR MEDIA DE UN EVENTO
+  // ============================
+// media.service.ts
+async findByEvento(id_evento: string) {
+  const medias = await this.mediaRepo.find({ where: { id_evento }, order: { orden: 'ASC' } });
+  return medias.map(m => ({
+    ...m,
+    url: m.url.startsWith('http') ? m.url : `http://localhost:3070/uploads/${m.url}`
+  }));
+}
+  // ============================
+  // OBTENER UNA MEDIA
+  // ============================
   async findOne(id_media: string) {
-    const media = await this.mediaRepo.findOne({ where: { id_media }, relations: ['evento'] });
+    const media = await this.mediaRepo.findOne({
+      where: { id_media },
+    });
+
     if (!media) throw new NotFoundException('Media no encontrada');
+
     return media;
   }
 
-  // Actualizar datos de una media (ej. descripción, visibilidad, orden)
-  async update(id_media: string, dto: UpdateMediaDto) {
+  // ============================
+  // CAMBIAR VISIBILIDAD
+  // ============================
+  async changeVisibility(id_media: string, visible: boolean) {
     const media = await this.mediaRepo.findOne({ where: { id_media } });
+
     if (!media) throw new NotFoundException('Media no encontrada');
 
-    this.mediaRepo.merge(media, {
-      descripcion: dto.descripcion ?? media.descripcion,
-      visibilidad_publica: dto.visibilidad_publica ?? media.visibilidad_publica,
-      orden: dto.orden ?? media.orden,
-    });
+    media.visibilidad_publica = visible;
 
     return this.mediaRepo.save(media);
   }
 
-
- // Eliminar una media específica (hard delete: BD + archivo físico)
+  // ============================
+  // ELIMINAR MEDIA (archivo + BD)
+  // ============================
   async remove(id_media: string) {
     const media = await this.mediaRepo.findOne({ where: { id_media } });
+
     if (!media) throw new NotFoundException('Media no encontrada');
 
-    // 1. Eliminar archivo físico
-    try {
-      unlinkSync(`.${media.url}`);
-    } catch (e) {
-      console.error('Error borrando archivo físico:', e.message);
-    }
+   const fileUrl = media.url;
 
-    // 2. Eliminar registro en BD
+if (fileUrl) {
+  const filePath = join(__dirname, '..', 'uploads', fileUrl.split('/').pop()!);
+  try {
+    unlinkSync(filePath);
+  } catch (e) {
+    console.error('Error borrando archivo físico:', e.message);
+  }
+
     await this.mediaRepo.delete(id_media);
 
     return { message: 'Media eliminada correctamente' };
+  
+}
   }
-
 }

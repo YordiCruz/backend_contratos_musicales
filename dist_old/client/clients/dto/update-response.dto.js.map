@@ -1,1 +1,1 @@
-{"version":3,"file":"update-response.dto.js","sourceRoot":"","sources":["../../../../src/client/clients/dto/update-response.dto.ts"],"names":[],"mappings":";;;;AAAA,MAAa,iBAAiB;IAC5B,EAAE,CAAS;IACX,SAAS,CAAS;IAClB,UAAU,CAAS;IACnB,mBAAmB,CAAS;IAC5B,oBAAoB,CAAS;IAC7B,MAAM,CAAS;;;;CAChB;AAPD,8CAOC"}
+{"version":3,"file":"update-response.dto.js","sourceRoot":"","sources":["../../../../src/client/clients/dto/update-response.dto.ts"],"names":[],"mappings":";;;;AAAA,MAAa,iBAAiB;IAC5B,EAAE,CAAS;IACX,SAAS,CAAS;IAClB,oBAAoB,CAAS;IAC7B,MAAM,CAAS;;;;CAChB;AALD,8CAKC"}

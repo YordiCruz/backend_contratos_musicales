@@ -29,6 +29,11 @@ const eventos_module_1 = require("./eventos/eventos.module");
 const disponibilidad_eventos_module_1 = require("./disponibilidad-eventos/disponibilidad-eventos.module");
 const notificaciones_module_1 = require("./notificaciones/notificaciones.module");
 const email_module_1 = require("./email/email.module");
+const clients_module_1 = require("./clients/clients.module");
+const clients_controller_1 = require("./clients/clients.controller");
+const categorias_controller_1 = require("./eventos/categorias/categorias.controller");
+const eventos_controller_1 = require("./eventos/eventos/eventos.controller");
+const media_controller_1 = require("./eventos/media/media.controller");
 let AdminModule = class AdminModule {
 };
 exports.AdminModule = AdminModule;
@@ -37,6 +42,7 @@ exports.AdminModule = AdminModule = __decorate([
         imports: [
             users_module_1.UsersModule,
             roles_module_1.RolesModule,
+            clients_module_1.ClientsModule,
             permissions_module_1.PermissionsModule,
             personas_module_1.PersonasModule,
             especialidades_module_1.EspecialidadesModule,
@@ -52,12 +58,16 @@ exports.AdminModule = AdminModule = __decorate([
         controllers: [
             users_controller_1.UsersController,
             roles_controller_1.RolesController,
+            clients_controller_1.ClientsController,
             personas_controller_1.PersonasController,
             reemplazos_controller_1.ReemplazosController,
             especialidads_controller_1.EspecialidadsController,
             integrantes_controller_1.IntegrantesController,
             categorias_especialidads_controller_1.CategoriasEspecialidadsController,
             admin_auth_controller_1.AdminAuthController,
+            categorias_controller_1.CategoriasController,
+            eventos_controller_1.EventosController,
+            media_controller_1.MediaController
         ]
     })
 ], AdminModule);

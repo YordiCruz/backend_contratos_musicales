@@ -5,7 +5,6 @@ import { Categoria } from '../categorias/entities/categoria.entity';
 import { DataSource, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Evento } from './entities/evento.entity';
-import { CreateMediaDto } from '../media/dto/create-media.dto';
 import { Media } from '../media/entities/media.entity';
 import { unlinkSync } from 'fs';
 
@@ -24,66 +23,46 @@ export class EventosService {
     private readonly dataSource: DataSource,
   ) {}
 
-  // eventos.service.ts
-  async createEventoConMedia(dto: CreateEventoDto, medias: CreateMediaDto[]) {
-    try {
-      return await this.dataSource.transaction(async (manager) => {
-        // 1. Validar categoría
-        const categoria = await manager.findOne(Categoria, {
-          where: { id_categoria: dto.id_categoria },
-        });
-        if (!categoria) {
-          throw new NotFoundException('Categoría no encontrada');
-        }
+  // ============================
+  // CREAR EVENTO (solo datos)
+  // ============================
+  async create(dto: CreateEventoDto) {
+    const categoria = await this.categoriaRepo.findOne({
+      where: { id_categoria: dto.id_categoria },
+    });
 
-        const existingEvento = await manager.findOne(Evento, {
-          where: { nombre: dto.nombre },
-        });
-        if (existingEvento) {
-          throw new Error(`Ya existe un evento con el nombre "${dto.nombre}"`);
-        }
+    if (!categoria) throw new NotFoundException('Categoría no encontrada');
 
-        // 2. Crear evento
-        const evento = manager.create(Evento, {
-          nombre: dto.nombre,
-          descripcion: dto.descripcion,
-          precio_base: dto.precio_base,
-          descuento: dto.descuento ?? 0,
-          categoria,
-          // creado_por: { id_user: userId } // si manejas auth
-        });
-        await manager.save(evento);
+    const existing = await this.repo.findOne({
+      where: { nombre: dto.nombre },
+    });
 
-        // 3. Crear medias asociadas
-        if (medias && medias.length > 0) {
-          const mediaEntities = medias.map((m) =>
-            manager.create(Media, {
-              tipo: m.tipo,
-              url: m.url, // aquí guardas la ruta del archivo subido
-              descripcion: m.descripcion,
-              orden: m.orden,
-              visibilidad_publica: m.visibilidad_publica ?? true,
-              evento,
-            }),
-          );
-          await manager.save(mediaEntities);
-        }
-
-        // 4. Retornar evento con relaciones cargadas
-        return manager.findOne(Evento, {
-          where: { id_evento: evento.id_evento },
-          relations: ['categoria', 'media'],
-        });
-      });
-    } catch (error) {
-      throw new Error(`Error al crear evento con media: ${error.message}`);
+    if (existing) {
+      throw new Error(`Ya existe un evento con el nombre "${dto.nombre}"`);
     }
+
+    const evento = this.repo.create({
+      nombre: dto.nombre,
+      descripcion: dto.descripcion,
+      precio_base: dto.precio_base,
+      categoria,
+    });
+
+    return this.repo.save(evento);
   }
 
+  // ============================
+  // LISTAR EVENTOS
+  // ============================
   findAll() {
-    return this.repo.find({ relations: ['categoria', 'media'] });
+    return this.repo.find({
+      relations: ['categoria', 'media'],
+    });
   }
 
+  // ============================
+  // OBTENER EVENTO
+  // ============================
   findOne(id: string) {
     return this.repo.findOne({
       where: { id_evento: id },
@@ -91,73 +70,58 @@ export class EventosService {
     });
   }
 
- async updateEventoConMedia(
-  id_evento: string,
-  dto: UpdateEventoDto,
-  medias?: CreateMediaDto[],
-  replaceAll: boolean = true, // flag para decidir el modo
-) {
-  return this.dataSource.transaction(async (manager) => {
-    const evento = await manager.findOne(Evento, {
-      where: { id_evento },
-      relations: ['media'],
-    });
-    if (!evento) throw new NotFoundException('Evento no encontrado');
-
-    // Actualizar datos del evento
-    manager.merge(Evento, evento, {
-      nombre: dto.nombre,
-      descripcion: dto.descripcion,
-      precio_base: Number(dto.precio_base),
-      descuento: dto.descuento ? Number(dto.descuento) : 0,
-    });
-    await manager.save(evento);
-
-    // Manejo de medias
-    if (medias && medias.length > 0) {
-      if (replaceAll) {
-        // 🔹 Modo reemplazo total
-        if (evento.media?.length) {
-          evento.media.forEach((m) => {
-            try {
-              unlinkSync(`.${m.url}`);
-            } catch (e) {
-              console.error('Error borrando archivo viejo:', e.message);
-            }
-          });
-        }
-
-        await manager.delete(Media, { evento });
-
-        const nuevasMedias = medias.map((m) =>
-          manager.create(Media, { ...m, evento }),
-        );
-        await manager.save(nuevasMedias);
-      } else {
-        // 🔹 Modo actualización parcial
-        for (const nueva of medias) {
-          const existente = evento.media.find((m) => m.url === nueva.url);
-          if (!existente) {
-            const mediaEntity = manager.create(Media, { ...nueva, evento });
-            await manager.save(mediaEntity);
-          }
-        }
-      }
-    }
-
-    return manager.findOne(Evento, {
-      where: { id_evento },
-      relations: ['categoria', 'media'],
-    });
+  // ============================
+  // EDITAR EVENTO (solo datos)
+  // ============================
+  async update(id_evento: string, dto: UpdateEventoDto) {
+  const evento = await this.repo.findOne({
+    where: { id_evento },
   });
+
+  if (!evento) throw new NotFoundException('Evento no encontrado');
+
+  // Buscar la categoría
+  if (dto.id_categoria) {
+    const categoria = await this.categoriaRepo.findOne({
+      where: { id_categoria: dto.id_categoria },
+    });
+    if (!categoria) throw new NotFoundException('Categoría no encontrada');
+    evento.categoria = categoria;
+  }
+
+  this.repo.merge(evento, {
+    nombre: dto.nombre,
+    descripcion: dto.descripcion,
+    precio_base: Number(dto.precio_base),
+  });
+
+  return this.repo.save(evento);
 }
 
+
+async changeEstado(id_evento: string, estado: string) {
+  const evento = await this.repo.findOne({ where: { id_evento } });
+
+  if (!evento) throw new NotFoundException('Evento no encontrado');
+
+  evento.estado = estado;
+
+  return this.repo.save(evento);
+}
+
+
+
+
+  // ============================
+  // ELIMINAR EVENTO + MEDIA
+  // ============================
   async remove(id_evento: string) {
     return this.dataSource.transaction(async (manager) => {
       const evento = await manager.findOne(Evento, {
         where: { id_evento },
         relations: ['media'],
       });
+
       if (!evento) throw new NotFoundException('Evento no encontrado');
 
       // 1. Eliminar archivos físicos
@@ -174,8 +138,8 @@ export class EventosService {
       // 2. Eliminar registros de media
       await manager.delete(Media, { evento });
 
-      // 3. Cambiar estado del evento (opcional, si quieres soft delete)
-      evento.estado = 'inactivo'; // o false
+      // 3. Cambiar estado del evento (soft delete)
+      evento.estado = 'inactivo';
       await manager.save(evento);
 
       return {

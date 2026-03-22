@@ -16,7 +16,8 @@ let EventosModule = class EventosModule {
 exports.EventosModule = EventosModule;
 exports.EventosModule = EventosModule = __decorate([
     (0, common_1.Module)({
-        imports: [categorias_module_1.CategoriasModule, media_module_1.MediaModule, events_module_1.EventsModule]
+        imports: [categorias_module_1.CategoriasModule, media_module_1.MediaModule, events_module_1.EventsModule],
+        exports: [categorias_module_1.CategoriasModule, media_module_1.MediaModule, events_module_1.EventsModule]
     })
 ], EventosModule);
 //# sourceMappingURL=eventos.module.js.map

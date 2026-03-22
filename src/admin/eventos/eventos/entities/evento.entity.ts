@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Categoria } from "../../categorias/entities/categoria.entity";
 import { User } from "src/admin/users/entities/user.entity";
 import { Media } from "../../media/entities/media.entity";
@@ -10,8 +10,12 @@ export class Evento {
   @PrimaryGeneratedColumn('uuid')
   id_evento: string;
 
-  @ManyToOne(() => Categoria, categoria => categoria.eventos)
-  categoria: Categoria;
+ @ManyToOne(() => Categoria, categoria => categoria.eventos)
+@JoinColumn({ name: 'id_categoria' })
+categoria: Categoria;
+
+@Column()
+id_categoria: string;
 
   @Column({ length: 100, unique: true })
   nombre: string;
@@ -19,23 +23,35 @@ export class Evento {
   @Column({ type: 'text', nullable: true })
   descripcion?: string;
 
-  @Column({ length: 20, default: 'planificado' })
+  @Column({ length: 20, default: 'activo' })
   estado: string;
 
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   precio_base: number;
 
-  @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })
-  descuento: number;
 
   @OneToMany(() => Contrato, contrato => contrato.evento)
   contratos: Contrato[];
 
   @ManyToOne(() => User, usuario => usuario.eventos_registrados)
-  creado_por: User;
+@JoinColumn({ name: 'creado_por' })
+creado_por: User;
 
-  @CreateDateColumn()
+@Column( { nullable: true })
+creado_por_id: string;
+
+  @CreateDateColumn({ type: 'timestamp'})
   creado_en: Date;
+
+  @UpdateDateColumn({ type: 'timestamp' })
+actualizado_en: Date;
+
+@Column({ nullable: true })
+actualizado_por: string;
+
+@DeleteDateColumn()
+eliminado_en: Date;
+
 
   @OneToMany(() => Media, media => media.evento)
   media: Media[];

@@ -9,6 +9,7 @@ export declare class Persona {
     documento_identidad: string;
     email: string;
     telefono: string;
+    estado: string;
     creado_en: Date;
     actualizado_en: Date;
     user: User;

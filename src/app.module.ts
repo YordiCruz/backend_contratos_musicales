@@ -10,12 +10,17 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { RouterModule } from '@nestjs/core';
 import { ClientModule } from './client/client.module';
 
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path'; // 👈 para rutas absolutas
+
 @Module({
   imports: [
      ThrottlerModule.forRoot([{
       ttl: 60000,
       limit: 10,
     }]),
+
+    
 
     ConfigModule.forRoot({
       envFilePath: '.development.env',
@@ -30,6 +35,13 @@ import { ClientModule } from './client/client.module';
       database: process.env.DB_DATABASE,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
+    }),
+
+      // Sirve los archivos de /uploads al frontend
+      // debemos instalar npm install @nestjs/serve-static
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'uploads'),
+      serveRoot: '/uploads', // Angular accederá a /uploads/nombre.png
     }),
 
     AdminModule,
@@ -50,6 +62,7 @@ import { ClientModule } from './client/client.module';
     
     DatabaseModule,
 
+    
   ],
   controllers: [AppController],
   providers: [AppService],

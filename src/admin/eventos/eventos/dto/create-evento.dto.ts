@@ -18,9 +18,5 @@ export class CreateEventoDto {
   @IsNumber()
   precio_base: number;
 
-  @Type(() => Number)
-  @IsOptional()
-  @IsNumber()
-  descuento?: number;
 
 }

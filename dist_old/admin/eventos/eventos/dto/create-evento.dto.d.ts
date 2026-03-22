@@ -3,5 +3,4 @@ export declare class CreateEventoDto {
     nombre: string;
     descripcion?: string;
     precio_base: number;
-    descuento?: number;
 }

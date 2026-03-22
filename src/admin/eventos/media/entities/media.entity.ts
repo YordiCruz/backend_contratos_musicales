@@ -1,4 +1,13 @@
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from "typeorm";
 import { Evento } from "../../eventos/entities/evento.entity";
 
 @Entity('media_events')
@@ -7,17 +16,24 @@ export class Media {
   @PrimaryGeneratedColumn('uuid')
   id_media: string;
 
-  @ManyToOne(() => Evento, evento => evento.media)
+  // 🔥 PRIMERO LA FK
+  @Column()
+  id_evento: string;
+
+  // 🔥 LUEGO LA RELACIÓN
+  @ManyToOne(() => Evento, evento => evento.media, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'id_evento' })
   evento: Evento;
 
   @Column({ length: 10 })
-  tipo: string; // imagen, video
+  tipo: string; // imagen | video
 
   @Column({ type: 'text' })
   url: string;
 
+  // 🔥 PERMITIR NULL EXPLÍCITAMENTE
   @Column({ type: 'text', nullable: true })
-  descripcion?: string;
+  descripcion: string | null;
 
   @Column({ nullable: true })
   orden?: number;
@@ -28,4 +44,9 @@ export class Media {
   @CreateDateColumn()
   creado_en: Date;
 
+  @UpdateDateColumn()
+  actualizado_en: Date;
+
+  @DeleteDateColumn()
+  eliminado_en: Date;
 }
