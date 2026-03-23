@@ -15,6 +15,6 @@ export class DisponibilidadEvento {
   @Column({ type: 'varchar', length: 20, default: 'libre' })
   estado: string; // libre | ocupado
 
-  @ManyToOne(() => Contrato, contrato => contrato.id_contrato, { nullable: true })
+  @ManyToOne(() => Contrato, contrato => contrato.disponibilidades, { nullable: true })
   contrato: Contrato | null;
 }

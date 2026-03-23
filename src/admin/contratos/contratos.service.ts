@@ -105,9 +105,6 @@ async createContrato(data: CreateContratoDto) {
     hora_fin: data.hora_fin,
     tipo_servicio: data.tipo_servicio,
     horas_contratadas: data.horas_contratadas,
-    adelanto: data.adelanto,
-    saldo: data.saldo,
-    fecha_adelanto: data.fecha_adelanto,
     estado: 'pendiente',
   });
 
