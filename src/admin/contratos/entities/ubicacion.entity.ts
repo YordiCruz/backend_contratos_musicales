@@ -18,10 +18,6 @@ export class Ubicacion {
   @Column({ type: 'decimal', precision: 10, scale: 6, nullable: true })
   longitud: number;
 
-  //cuantas personas seran
-  @Column({ type: 'int', nullable: true })
-  capacidad: number;
-
   @OneToMany(() => Contrato, contrato => contrato.ubicacion)
   contratos: Contrato[];
 }

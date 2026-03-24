@@ -5,39 +5,14 @@ import { UpdateContratoDto } from './dto/update-contrato.dto';
 import { ContratoReemplazo } from './entities/contrato-reemplazo.entity';
 import { Contrato } from './entities/contrato.entity';
 import { AsignarIntegrantesDto } from './dto/asignar-integrante.dto';
-import { TipoNotificacion } from '../notificaciones/dto/create-notificacione.dto';
 import { NotificacionesService } from '../notificaciones/notificaciones.service';
-import { InjectRepository } from '@nestjs/typeorm';
-import { TipoServicioEspecialidad } from './entities/tipo-servicio-especialidad.entity';
-import { Repository } from 'typeorm';
-import { ContratoIntegrante } from './entities/contrato-integrante.entity';
-import { Integrante } from '../integrantes/entities/integrante.entity';
-import { ResumenContratoDTO, SugerenciaDTO } from './dto/resumen-contrato.dto';
-import { Persona } from '../personas/entities/persona.entity';
+
 
 @Controller('contratos')
 export class ContratosController {
   constructor(
     private readonly contratosService: ContratosService,
     private readonly notificacionesService: NotificacionesService,
-
-    @InjectRepository(Contrato)
-    private contratoRepo: Repository<Contrato>,
-
-    @InjectRepository(ContratoReemplazo)
-    private contratoReemplazoRepo: Repository<ContratoReemplazo>,
-
-    @InjectRepository(ContratoIntegrante)
-    private contratoIntegranteRepo: Repository<ContratoIntegrante>,
-
-    @InjectRepository(Integrante)
-    private integranteRepo: Repository<Integrante>,
-    
-     @InjectRepository(Persona)
-    private personaRepo: Repository<Persona>,
-
-    @InjectRepository(TipoServicioEspecialidad)
-    private readonly tipoServicioEspecialidadRepo: Repository<TipoServicioEspecialidad>,
 
   ) {}
 
@@ -51,6 +26,11 @@ export class ContratosController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.contratosService.getContrato(id);
+  }
+
+  @Get()
+  findAll() {
+    return this.contratosService.getAllContratos();
   }
 
   // Confirmar contrato (asignar integrantes y marcar disponibilidad)

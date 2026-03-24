@@ -133,6 +133,10 @@ for (const admin of admins) {
   return contrato;
 }
 
+getAllContratos() {
+  return this.contratoRepo.find();
+}
+
   // Obtener contrato con todas sus relaciones
  async getContrato(id: string) {
   const contrato = await this.contratoRepo.findOne({

@@ -33,15 +33,4 @@ export class CreateContratoDto {
   @IsNumber()
   horas_contratadas?: number;
 
-  @IsOptional()
-  @IsNumber()
-  adelanto?: number;
-
-  @IsOptional()
-  @IsNumber()
-  saldo?: number;
-
-  @IsOptional()
-  @IsDateString()
-  fecha_adelanto?: Date;
 }

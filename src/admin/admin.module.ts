@@ -25,6 +25,9 @@ import { ClientsController } from './clients/clients.controller';
 import { CategoriasController } from './eventos/categorias/categorias.controller';
 import { EventosController } from './eventos/eventos/eventos.controller';
 import { MediaController } from './eventos/media/media.controller';
+import { ContratosController } from './contratos/contratos.controller';
+import { ContratosModule } from './contratos/contratos.module';
+import { UbicacionController } from './contratos/ubicacion.controller';
 
 @Module({
     imports: [
@@ -41,7 +44,8 @@ import { MediaController } from './eventos/media/media.controller';
     EventosModule,
     DisponibilidadEventosModule,
     NotificacionesModule,
-    EmailModule
+    EmailModule,
+    ContratosModule,
 ],
 
 controllers:[
@@ -56,7 +60,9 @@ controllers:[
     AdminAuthController,
     CategoriasController,
     EventosController,
-    MediaController
+    MediaController, 
+    ContratosController,
+    UbicacionController
 
 ]
 

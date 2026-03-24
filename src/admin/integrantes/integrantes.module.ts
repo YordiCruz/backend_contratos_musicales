@@ -12,6 +12,7 @@ import { AdminAuthModule } from 'src/auth/admin-auth/admin-auth.module';
     AdminAuthModule
   ],
   providers: [IntegrantesService],
+  //controllers: [IntegrantesController],
   exports:[IntegrantesService]
 })
 export class IntegrantesModule {}

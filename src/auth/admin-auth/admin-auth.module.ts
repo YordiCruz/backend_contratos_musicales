@@ -36,6 +36,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     AdminJwtGuard
 
   ],
+  //controllers: [AdminAuthController],
   exports: [
     AdminAuthService,
     AdminJwtStrategy,
