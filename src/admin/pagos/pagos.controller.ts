@@ -7,23 +7,24 @@ export class PagosController {
 
   @Post()
   registrar(@Body() body, @Req() req) {
-    return this.pagosService.registrarPago( {
-      contratoId: body.contratoId,
-      monto: body.monto,
-      metodo: body.metodo,
-      tipo: body.tipo,
-      referencia: body.referencia,
-      proveedor: body.proveedor,
-      transaccion_id: body.transaccion_id,
-      payload: body.payload,
-      registrado_por: req.user,
-    });
+    return this.pagosService.registrarPago(body);
   }
 
   @Get(':contratoId')
   listar(@Param('contratoId') contratoId: string) {
     return this.pagosService.listarPagos(contratoId);
   }
+
+  @Get()
+findAll() {
+  return this.pagosService.listarTodosPagos();
+}
+
+
+@Get('contrato/:id/resumen')
+async resumen(@Param('id') id: string) {
+  return this.pagosService.obtenerResumenContrato(id);
+}
 
 
 

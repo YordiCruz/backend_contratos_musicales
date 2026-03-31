@@ -7,7 +7,7 @@ import { Contrato } from '../contratos/entities/contrato.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Pago, Contrato])],
-  controllers: [PagosController],
+  //controllers: [PagosController],
   providers: [PagosService],
   exports: [PagosService],
 })

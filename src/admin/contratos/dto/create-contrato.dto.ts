@@ -33,4 +33,8 @@ export class CreateContratoDto {
   @IsNumber()
   horas_contratadas?: number;
 
+  @IsOptional()
+  @IsNumber()
+  horas_extra?: number;
+
 }

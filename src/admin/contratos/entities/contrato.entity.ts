@@ -1,13 +1,12 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, ManyToMany } from 'typeorm';
 import { Ubicacion } from './ubicacion.entity';
-import { Pago } from './pago.entity';
 import { Client } from 'src/client/clients/entities/client.entity';
 import { Evento } from 'src/admin/eventos/eventos/entities/evento.entity';
-import { Integrante } from 'src/admin/integrantes/entities/integrante.entity';
 import { ContratoIntegrante } from './contrato-integrante.entity';
 import { ContratoReemplazo } from './contrato-reemplazo.entity';
 import { ContratoEspecialidad } from './contrato-especialidad.entity';
 import { DisponibilidadEvento } from 'src/admin/disponibilidad-eventos/entities/disponibilidad-evento.entity';
+import { Pago } from 'src/admin/pagos/entities/pago.entity';
 
 @Entity('contratos')
 export class Contrato {
@@ -46,6 +45,9 @@ export class Contrato {
 
   @Column({ type: 'int', nullable: true })
   horas_contratadas: number;
+
+  @Column({ type: 'int', default: 0 })
+horas_extra: number;
 
   @Column({ type: 'boolean', default: 'false' })
   admin_aprobacion: boolean;

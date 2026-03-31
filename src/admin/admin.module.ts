@@ -28,6 +28,8 @@ import { MediaController } from './eventos/media/media.controller';
 import { ContratosController } from './contratos/contratos.controller';
 import { ContratosModule } from './contratos/contratos.module';
 import { UbicacionController } from './contratos/ubicacion.controller';
+import { PagosModule } from './pagos/pagos.module';
+import { PagosController } from './pagos/pagos.controller';
 
 @Module({
     imports: [
@@ -46,6 +48,7 @@ import { UbicacionController } from './contratos/ubicacion.controller';
     NotificacionesModule,
     EmailModule,
     ContratosModule,
+    PagosModule
 ],
 
 controllers:[
@@ -62,7 +65,8 @@ controllers:[
     EventosController,
     MediaController, 
     ContratosController,
-    UbicacionController
+    UbicacionController,
+    PagosController
 
 ]
 
