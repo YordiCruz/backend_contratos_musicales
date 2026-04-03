@@ -17,7 +17,6 @@ import { Client } from 'src/client/clients/entities/client.entity';
 import { Evento } from '../eventos/eventos/entities/evento.entity';
 import { CreateContratoDto } from './dto/create-contrato.dto';
 import { Reemplazo } from '../reemplazos/entities/reemplazo.entity';
-import { Pago } from './entities/pago.entity';
 import { TipoServicioEspecialidad } from './entities/tipo-servicio-especialidad.entity';
 import { AsignarIntegranteDto } from './dto/asignar-integrante.dto';
 import { Persona } from '../personas/entities/persona.entity';
@@ -26,6 +25,7 @@ import { CreateNotificacioneDto, TipoNotificacion } from '../notificaciones/dto/
 import { NotificacionesService } from '../notificaciones/notificaciones.service';
 import { InvitacionDTO, ResumenContratoDTO, SugerenciaDTO } from './dto/resumen-contrato.dto';
 import { Notificacione } from '../notificaciones/entities/notificacione.entity';
+import { Pago, TipoPago } from '../pagos/entities/pago.entity';
 
 @Injectable()
 export class ContratosService {
@@ -291,7 +291,7 @@ let cobertura: { especialidad: string; estado: string; tipo: string; nombre: str
 
     // 8. Validar pago de adelanto
     const pagoAdelanto = await queryRunner.manager.findOne(Pago, {
-      where: { contrato: { id_contrato: contratoId }, tipo: 'adelanto' },
+      where: { contrato: { id_contrato: contratoId }, tipo: TipoPago.ADELANTO },
     });
 
     if (!pagoAdelanto) {
