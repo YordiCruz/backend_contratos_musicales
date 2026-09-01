@@ -1,18 +1,20 @@
 import { Module } from '@nestjs/common';
 import { ClientAuthService } from './client-auth.service';
-import { ClientAuthController } from './client-auth.controller';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from 'src/admin/users/entities/user.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { ClientJwtStrategy } from './strategies/client-jwt.strategy';
 import { ClientJwtGuard } from './guards/client-jwt.guard';
+import { User } from '../../admin/users/entities/user.entity';
+import { Role } from '../../admin/roles/entities/role.entity';
+import { Persona } from '../../admin/personas/entities/persona.entity';
+import { Client } from '../../client/clients/entities/client.entity';
 
 @Module({
   imports: [
 
     ConfigModule,
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, Persona, Role, Client]),
 
     JwtModule.registerAsync({
           imports: [ConfigModule],

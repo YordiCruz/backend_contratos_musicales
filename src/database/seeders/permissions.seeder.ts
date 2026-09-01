@@ -1,7 +1,7 @@
 import { InjectRepository } from "@nestjs/typeorm";
-import { Permission } from "src/admin/permissions/entities/permission.entity";
-import { Role } from "src/admin/roles/entities/role.entity";
 import { Repository } from "typeorm";
+import { Permission } from "../../admin/permissions/entities/permission.entity";
+import { Role } from "../../admin/roles/entities/role.entity";
 
 export class PermissionsSeeder {
   constructor(
@@ -38,10 +38,10 @@ export class PermissionsSeeder {
     // -----------------------------
     // 2. Buscar roles existentes
     // -----------------------------
-    const admin = await this.rolRepo.findOne({ where: { nombre: 'admin' }, relations: ['permissions'] });
-    const viewer = await this.rolRepo.findOne({ where: { nombre: 'viewer' }, relations: ['permissions'] });
-    const empleado = await this.rolRepo.findOne({ where: { nombre: 'empleado' }, relations: ['permissions'] });
-    const cliente = await this.rolRepo.findOne({ where: { nombre: 'cliente' }, relations: ['permissions'] });
+    const admin = await this.rolRepo.findOne({ where: { nombre: 'admin' }, relations: { permissions: true } });
+    const viewer = await this.rolRepo.findOne({ where: { nombre: 'viewer' }, relations: { permissions: true } });
+    const empleado = await this.rolRepo.findOne({ where: { nombre: 'empleado' }, relations: { permissions: true } });
+    const cliente = await this.rolRepo.findOne({ where: { nombre: 'cliente' }, relations: { permissions: true } });
 
     if (!admin || !viewer || !empleado || !cliente) {
       console.error('Faltan roles en la base de datos');

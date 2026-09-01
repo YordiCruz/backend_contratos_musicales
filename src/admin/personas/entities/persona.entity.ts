@@ -1,7 +1,3 @@
-import { Integrante } from 'src/admin/integrantes/entities/integrante.entity';
-import { Reemplazo } from 'src/admin/reemplazos/entities/reemplazo.entity';
-import { User } from 'src/admin/users/entities/user.entity';
-import { Client } from 'src/client/clients/entities/client.entity';
 import {
   Column,
   CreateDateColumn,
@@ -10,6 +6,10 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { User } from '../../users/entities/user.entity';
+import { Client } from '../../clients/entities/client.entity';
+import { Integrante } from '../../integrantes/entities/integrante.entity';
+import { Reemplazo } from '../../reemplazos/entities/reemplazo.entity';
 
 @Entity('persons')
 export class Persona {

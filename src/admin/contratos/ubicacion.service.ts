@@ -18,14 +18,14 @@ export class UbicacionService {
 
   // Obtener todas las ubicaciones
   async findAll() {
-    return this.ubicacionRepo.find({ relations: ['contratos'] });
+    return this.ubicacionRepo.find({ relations: { contratos: true } });
   }
 
   // Obtener una ubicación por id
   async findOne(id: string) {
     const ubicacion = await this.ubicacionRepo.findOne({
       where: { id_ubicacion: id },
-      relations: ['contratos'],
+      relations: { contratos: true },
     });
     if (!ubicacion) throw new NotFoundException('Ubicación no encontrada');
     return ubicacion;
@@ -43,4 +43,9 @@ export class UbicacionService {
     const ubicacion = await this.findOne(id);
     return this.ubicacionRepo.remove(ubicacion);
   }
+
+
+  
+
+
 }

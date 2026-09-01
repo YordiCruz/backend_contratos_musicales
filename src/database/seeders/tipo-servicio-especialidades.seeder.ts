@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { TipoServicioEspecialidad } from 'src/admin/contratos/entities/tipo-servicio-especialidad.entity';
-import { Especialidad } from 'src/admin/especialidades/especialidads/entities/especialidad.entity';
+import { TipoServicioEspecialidad } from '../../admin/contratos/entities/tipo-servicio-especialidad.entity';
+import { Especialidad } from '../../admin/especialidades/especialidads/entities/especialidad.entity';
 
 @Injectable()
 export class ServicioEspecialidadSeeder {

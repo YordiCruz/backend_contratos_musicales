@@ -1,4 +1,4 @@
-import { ResponsePersonaDto } from "src/admin/personas/dto/reponse-persona.dto";
+import { ResponsePersonaDto } from "../../personas/dto/reponse-persona.dto";
 
 export class ResponseUserDto {
     id: string;
@@ -7,5 +7,6 @@ export class ResponseUserDto {
     estado: string;
     origen_registro: string;
     persona: ResponsePersonaDto | null;
+    solicitud_recuperacion: boolean;
 
 }

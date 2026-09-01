@@ -3,7 +3,7 @@ import { EspecialidadsService } from './especialidads.service';
 import { CreateEspecialidadDto } from './dto/create-especialidad.dto';
 import { UpdateEspecialidadDto } from './dto/update-especialidad.dto';
 import { FiltrosEspecialidadDto } from './dto/filtros-especialidad.dto';
-import { AdminJwtGuard } from 'src/auth/admin-auth/guards/admin-jwt.guard';
+import { AdminJwtGuard } from '../../../auth/admin-auth/guards/admin-jwt.guard';
 
 @UseGuards(AdminJwtGuard)
 @Controller('especialidades')

@@ -1,9 +1,7 @@
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { CategoriasEspecialidad } from "../../categorias_especialidads/entities/categorias_especialidad.entity";
-import { Integrante } from "src/admin/integrantes/entities/integrante.entity";
-import { Reemplazo } from "src/admin/reemplazos/entities/reemplazo.entity";
-import { IntegranteEspecialidad } from "src/admin/integrantes/entities/integrante-especialidad.entity";
-import { ReemplazoEspecialidad } from "src/admin/reemplazos/entities/reemplazo-especialidad.entity";
+import { IntegranteEspecialidad } from "../../../integrantes/entities/integrante-especialidad.entity";
+import { ReemplazoEspecialidad } from "../../../reemplazos/entities/reemplazo-especialidad.entity";
 
 @Entity('specialties')
 export class Especialidad {

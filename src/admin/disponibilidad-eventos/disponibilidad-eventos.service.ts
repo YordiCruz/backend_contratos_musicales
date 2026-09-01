@@ -14,15 +14,20 @@ export class DisponibilidadEventosService {
   async getDisponibilidadPorMes(año: number, mes: number) {
     return this.disponibilidadRepo
       .createQueryBuilder('d')
-      .where('EXTRACT(YEAR FROM d.fecha) = :año', { año })
+      .leftJoinAndSelect('d.contrato', 'contrato')
+      .where('EXTRACT(YEAR FROM d.fecha) = :anio', { anio: año })
       .andWhere('EXTRACT(MONTH FROM d.fecha) = :mes', { mes })
       .getMany();
   }
 
   // Obtener disponibilidad por día específico
-  async getDisponibilidadPorDia(fecha: Date) {
-    return this.disponibilidadRepo.find({ where: { fecha } });
-  }
+ async getDisponibilidadPorDia(fecha: Date) {
+  return this.disponibilidadRepo
+    .createQueryBuilder('d')
+    .leftJoinAndSelect('d.contrato', 'contrato')
+    .where('d.fecha::text = :fecha', { fecha: fecha.toISOString().split('T')[0] })
+    .getMany();
+}
 
   // Marcar slot como ocupado
   async marcarOcupado(fecha: Date, bloque: string, contratoId: string) {

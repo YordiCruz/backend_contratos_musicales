@@ -5,6 +5,13 @@ import { DisponibilidadEventosService } from './disponibilidad-eventos.service';
 export class DisponibilidadEventosController {
   constructor(private readonly disponibilidadService: DisponibilidadEventosService) {}
 
+    // Consultar disponibilidad por día específico
+  @Get('dia/:fecha')
+  async getDisponibilidadPorDia(@Param('fecha') fecha: string) {
+    return this.disponibilidadService.getDisponibilidadPorDia(new Date(fecha));
+  }
+
+
   // Consultar disponibilidad por mes (ej: calendario)
   @Get(':año/:mes')
   async getDisponibilidadPorMes(
@@ -14,11 +21,7 @@ export class DisponibilidadEventosController {
     return this.disponibilidadService.getDisponibilidadPorMes(año, mes);
   }
 
-  // Consultar disponibilidad por día específico
-  @Get('dia/:fecha')
-  async getDisponibilidadPorDia(@Param('fecha') fecha: string) {
-    return this.disponibilidadService.getDisponibilidadPorDia(new Date(fecha));
-  }
+
 
   // Marcar slot como ocupado (cuando se confirma un contrato)
   @Post('ocupar')

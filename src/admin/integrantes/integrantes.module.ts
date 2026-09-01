@@ -4,7 +4,7 @@ import { IntegrantesController } from './integrantes.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Integrante } from './entities/integrante.entity';
 import { Especialidad } from '../especialidades/especialidads/entities/especialidad.entity';
-import { AdminAuthModule } from 'src/auth/admin-auth/admin-auth.module';
+import { AdminAuthModule } from '../../auth/admin-auth/admin-auth.module';
 
 @Module({
   imports:[

@@ -5,8 +5,8 @@ import { UpdateIntegranteDto } from './dto/update-integrante.dto';
 import { FiltroIntegranteDataDto } from './dto/filtro-integrante-data.dto';
 import { AsignarEspecialidadDto } from './dto/asignar-especialidad.dto';
 import { AsignarVariasEspecialidadesDto } from './dto/asignar-varias-especialidades.dto';
-import { AdminJwtGuard } from 'src/auth/admin-auth/guards/admin-jwt.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { AdminJwtGuard } from '../../auth/admin-auth/guards/admin-jwt.guard';
 
 @ApiBearerAuth()
 @UseGuards(AdminJwtGuard)

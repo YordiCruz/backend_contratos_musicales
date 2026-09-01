@@ -1,20 +1,40 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, ManyToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, ManyToMany, JoinColumn } from 'typeorm';
 import { Ubicacion } from './ubicacion.entity';
-import { Client } from 'src/client/clients/entities/client.entity';
-import { Evento } from 'src/admin/eventos/eventos/entities/evento.entity';
+
 import { ContratoIntegrante } from './contrato-integrante.entity';
 import { ContratoReemplazo } from './contrato-reemplazo.entity';
 import { ContratoEspecialidad } from './contrato-especialidad.entity';
-import { DisponibilidadEvento } from 'src/admin/disponibilidad-eventos/entities/disponibilidad-evento.entity';
-import { Pago } from 'src/admin/pagos/entities/pago.entity';
+import { Client } from '../../clients/entities/client.entity';
+import { Evento } from '../../eventos/eventos/entities/evento.entity';
+import { Pago } from '../../pagos/entities/pago.entity';
+import { DisponibilidadEvento } from '../../disponibilidad-eventos/entities/disponibilidad-evento.entity';
 
+
+export enum EstadoContrato {
+  PENDIENTE = 'pendiente',
+  CONFIRMADO = 'confirmado',
+  EN_PROCESO = 'en_proceso',
+  FINALIZADO_PENDIENTE_PAGO = 'con_deuda',
+  CANCELADO = 'cancelado',
+  FINALIZADO = 'finalizado',
+  RECHAZADO = 'rechazado'
+
+}
+
+export enum estadopago{
+  SIN_SOLICITAR = 'sin_solicitar',
+  ADELANTO_REQUERIDO = 'adelanto_requerido',
+  PAGADO_PARCIAL = 'pagado_parcial',
+  PAGADO_TOTAL = 'pagado_total',
+}
 @Entity('contratos')
 export class Contrato {
   @PrimaryGeneratedColumn('uuid')
   id_contrato: string;
 
-  @ManyToOne(() => Client, cliente => cliente.contratos, { eager: true })
-  cliente: Client;
+@ManyToOne(() => Client, cliente => cliente.contratos)
+@JoinColumn({ name: 'clienteId' })
+cliente: Client;
 
   @ManyToOne(() => Evento, evento => evento.contratos, { eager: true })
   evento: Evento;
@@ -52,11 +72,8 @@ horas_extra: number;
   @Column({ type: 'boolean', default: 'false' })
   admin_aprobacion: boolean;
 
-  @Column({ type: 'varchar', length: 20, default: 'pendiente' })
-  estado: string;
-
-  @Column({ type: 'varchar', length: 100, nullable: true})
-  motivo_cancelacion:string
+  @Column({ type: 'varchar', length: 20, default: EstadoContrato.PENDIENTE })
+  estado: EstadoContrato;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   creado_en: Date;
@@ -70,4 +87,55 @@ horas_extra: number;
   @OneToMany(() => DisponibilidadEvento, disp => disp.contrato)
 disponibilidades: DisponibilidadEvento[];
 
+@Column({ type: 'boolean', default: false })
+cliente_acepto_contrato: boolean;
+
+@Column({ type: 'date', nullable: true })
+cliente_fecha_aceptacion: Date;
+
+@Column({ type: 'text', nullable: true })
+cliente_motivo_cancelacion?: string;
+
+@Column({ type: 'text', nullable: true })
+pdf_url: string;
+
+@Column({ type: 'varchar', length: 50, nullable: true })
+cliente_contrato_estado: string;
+
+@Column({
+  unique: true
+})
+numero_contrato: string;
+
+@Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+descuento: number;
+
+@Column({ type: 'decimal', precision: 10, scale: 2 })
+monto_final: number;
+
+@Column({ type: 'decimal', precision:10, scale: 2, default: 0})
+precio_original:number;
+
+@Column({ type: 'decimal', precision:10, scale: 2, default: 0})
+total_pagado:number;
+
+@Column({ type: 'decimal', precision:10, scale: 2, default: 0})
+saldo:number;
+
+@Column({ type: 'decimal', precision:10, scale: 2, default: 0})
+porcentaje_descuento?: number;
+
+@Column({ type: 'enum', enum: estadopago, default: estadopago.SIN_SOLICITAR })
+estado_pago: estadopago;
+
+@Column({
+    type: 'decimal',
+    precision: 5,
+    scale: 2,
+    default: 30
+})
+porcentaje_adelanto: number;
+
+
 }
+

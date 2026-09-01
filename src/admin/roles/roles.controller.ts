@@ -4,7 +4,7 @@ import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { AssignRolesDto } from './dto/assign-role.dto';
 import { RemoveRoleDto } from './dto/remove-role.dto';
-import { AdminJwtGuard } from 'src/auth/admin-auth/guards/admin-jwt.guard';
+import { AdminJwtGuard } from '../../auth/admin-auth/guards/admin-jwt.guard';
 
 @UseGuards(AdminJwtGuard)
 @Controller('roles')
@@ -43,8 +43,8 @@ export class RolesController {
   }
 
    @Post('assign-roles/:userId')
-  assignRoles(@Param('userId') userId: string, @Body() dto: AssignRolesDto) {
-    return this.rolesService.assignRoles(userId, dto);
+  assignRoles(@Param('userId') userId: string, @Body() roleId: AssignRolesDto) {
+    return this.rolesService.assignRole(userId, roleId);
   }
 
 

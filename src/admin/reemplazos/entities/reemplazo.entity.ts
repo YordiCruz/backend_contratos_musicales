@@ -1,9 +1,8 @@
-import { ContratoReemplazo } from "src/admin/contratos/entities/contrato-reemplazo.entity";
-import { Especialidad } from "src/admin/especialidades/especialidads/entities/especialidad.entity";
-import { Persona } from "src/admin/personas/entities/persona.entity";
-import { User } from "src/admin/users/entities/user.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { ReemplazoEspecialidad } from "./reemplazo-especialidad.entity";
+import { Persona } from "../../personas/entities/persona.entity";
+import { ContratoReemplazo } from "../../contratos/entities/contrato-reemplazo.entity";
+import { User } from "../../users/entities/user.entity";
 
 @Entity('group_replacements')
 export class Reemplazo {
@@ -11,7 +10,11 @@ export class Reemplazo {
     @PrimaryGeneratedColumn('uuid')
     id:string
 
-    @OneToOne(() => Persona, persona => persona.id)
+    @OneToOne(() => User, usuario => usuario.reemplazo)
+    @JoinColumn({ name: 'user_id' })
+    user: User
+
+    @OneToOne(() => Persona, usuario => usuario.reemplazo)
     @JoinColumn({ name: 'id_persona' })
     persona: Persona
 

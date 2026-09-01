@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { ValidationPipe } from '@nestjs/common';
+import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { RolesSeeder } from './database/seeders/roles.seeder';
 import { PermissionsSeeder } from './database/seeders/permissions.seeder';
 import { EspecialidadesSeeder } from './database/seeders/especialidades.seeder';
@@ -10,6 +10,7 @@ import { join } from 'path';
 
 import * as express from 'express';
 import { ServicioEspecialidadSeeder } from './database/seeders/tipo-servicio-especialidades.seeder';
+import { ValidationError } from 'class-validator';
 
 
 async function bootstrap() {
@@ -43,11 +44,22 @@ if (process.env.SEED === 'true') {
     const servicioespecialidadseeders = app.get(ServicioEspecialidadSeeder);
     await servicioespecialidadseeders.run();
 }
-
+console.log(join(__dirname, '..', 'uploads'));
 app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));
 
 
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
+  app.useGlobalPipes(new ValidationPipe({ 
+    whitelist: true,
+    transform: true,
+  
+    exceptionFactory: (errors) => {
+
+      const mensajes = obtenerMensajes(errors);
+
+      return new BadRequestException(mensajes);
+    }
+
+  }));
   
   const config = new DocumentBuilder()
     .setTitle('Pagina web para la gestion de informacion de contratos musicales')
@@ -65,5 +77,27 @@ app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));
   await app.listen(process.env.PORT ?? 3070);
 
 
+  
 }
 bootstrap();
+
+
+//para messageservice de manera que no muestre con user.mensaje persona.mensaje
+function obtenerMensajes(errors: ValidationError[]): string[] {
+
+const mensajes: string[] = [];
+
+for (const error of errors) {
+
+  if (error.constraints) {
+    mensajes.push(...Object.values(error.constraints));
+  }
+
+  if (error.children?.length) {
+    mensajes.push(...obtenerMensajes(error.children));
+  }
+
+}
+
+return mensajes;
+}

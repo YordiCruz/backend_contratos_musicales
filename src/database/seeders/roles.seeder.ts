@@ -1,8 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Permission } from "src/admin/permissions/entities/permission.entity";
-import { Role } from "src/admin/roles/entities/role.entity";
 import { Repository } from "typeorm";
+import { Role } from "../../admin/roles/entities/role.entity";
+import { Permission } from "../../admin/permissions/entities/permission.entity";
 
 @Injectable()
 export class RolesSeeder {
@@ -58,7 +58,7 @@ export class RolesSeeder {
   // Verificación siempre
   const check = await this.rolerepo.findOne({
     where: { id: savedRole.id },
-    relations: ['permissions'],
+    relations: { permissions: true },
   });
   console.log(`Permisos del rol ${role.nombre}:`, check?.permissions);
 }

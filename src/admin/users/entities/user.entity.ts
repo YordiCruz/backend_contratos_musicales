@@ -1,10 +1,11 @@
-import { Evento } from "src/admin/eventos/eventos/entities/evento.entity";
-import { Pago } from "src/admin/pagos/entities/pago.entity";
-import { Persona } from "src/admin/personas/entities/persona.entity";
-import { Reemplazo } from "src/admin/reemplazos/entities/reemplazo.entity";
-import { Role } from "src/admin/roles/entities/role.entity";
-import { Client } from "src/client/clients/entities/client.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Role } from "../../roles/entities/role.entity";
+import { Persona } from "../../personas/entities/persona.entity";
+import { Client } from "../../clients/entities/client.entity";
+import { Reemplazo } from "../../reemplazos/entities/reemplazo.entity";
+import { Evento } from "../../eventos/eventos/entities/evento.entity";
+import { Pago } from "../../pagos/entities/pago.entity";
+import { Integrante } from "../../integrantes/entities/integrante.entity";
 
 @Entity('users') //aqui definimos el nombre de la tabla 
 export class User {
@@ -62,7 +63,7 @@ export class User {
     registrado_por: User;
 
     @OneToOne(()=> Persona, (persona) => persona.user)
-    @JoinColumn({name: 'persona_id'})
+    @JoinColumn({name: 'id_persona'})
     persona: Persona
 
     @OneToMany(() => Client, (cliente) => cliente.registrado_por)
@@ -86,5 +87,30 @@ export class User {
 
     @OneToMany(() => Pago, (pago) => pago.registrado_por)
     pagos: Pago[]
+
+    @Column({
+        type: 'text',
+        nullable: true
+    })
+    refresh_token?: string
+
+    @OneToOne(() => Client, client => client.user)
+    cliente: Client;
+
+    @OneToOne(() => Reemplazo, (reemplazo) => reemplazo.user)
+    reemplazo: Reemplazo;
+
+    @OneToOne(() => Integrante, (integrante) => integrante.user)
+    integrante: Integrante;
+
+    @Column({
+ default:false
+})
+password_temporal:boolean;
+
+@Column({
+ default:false
+})
+solicitud_recuperacion:boolean;
 
 }

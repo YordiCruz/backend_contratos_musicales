@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateEventoDto } from './dto/create-evento.dto';
 import { UpdateEventoDto } from './dto/update-evento.dto';
 import { Categoria } from '../categorias/entities/categoria.entity';
@@ -38,7 +38,7 @@ export class EventosService {
     });
 
     if (existing) {
-      throw new Error(`Ya existe un evento con el nombre "${dto.nombre}"`);
+      throw new BadRequestException(`Ya existe un evento con el nombre "${dto.nombre}"`);
     }
 
     const evento = this.repo.create({
@@ -56,7 +56,10 @@ export class EventosService {
   // ============================
   findAll() {
     return this.repo.find({
-      relations: ['categoria', 'media'],
+      relations: {
+        categoria: true,
+        media: true
+      }
     });
   }
 
@@ -66,7 +69,10 @@ export class EventosService {
   findOne(id: string) {
     return this.repo.findOne({
       where: { id_evento: id },
-      relations: ['categoria', 'media'],
+      relations: {
+        categoria: true,
+        media: true
+      }
     });
   }
 
@@ -119,7 +125,7 @@ async changeEstado(id_evento: string, estado: string) {
     return this.dataSource.transaction(async (manager) => {
       const evento = await manager.findOne(Evento, {
         where: { id_evento },
-        relations: ['media'],
+        relations: { media: true },
       });
 
       if (!evento) throw new NotFoundException('Evento no encontrado');
@@ -129,7 +135,7 @@ async changeEstado(id_evento: string, estado: string) {
         evento.media.forEach((m) => {
           try {
             unlinkSync(`.${m.url}`);
-          } catch (e) {
+          } catch (e: any) {
             console.error('Error borrando archivo:', e.message);
           }
         });

@@ -7,14 +7,12 @@ import { EspecialidadesModule } from './especialidades/especialidades.module';
 import { ReemplazosModule } from './reemplazos/reemplazos.module';
 import { IntegrantesModule } from './integrantes/integrantes.module';
 import { CategoriasEspecialidadsModule } from './especialidades/categorias_especialidads/categorias_especialidads.module';
-import { AdminAuthModule } from 'src/auth/admin-auth/admin-auth.module';
 import { UsersController } from './users/users.controller';
 import { RolesController } from './roles/roles.controller';
 import { PersonasController } from './personas/personas.controller';
 import { ReemplazosController } from './reemplazos/reemplazos.controller';
 import { IntegrantesController } from './integrantes/integrantes.controller';
 import { CategoriasEspecialidadsController } from './especialidades/categorias_especialidads/categorias_especialidads.controller';
-import { AdminAuthController } from 'src/auth/admin-auth/admin-auth.controller';
 import { EspecialidadsController } from './especialidades/especialidads/especialidads.controller';
 import { EventosModule } from './eventos/eventos.module';
 import { DisponibilidadEventosModule } from './disponibilidad-eventos/disponibilidad-eventos.module';
@@ -32,6 +30,13 @@ import { PagosModule } from './pagos/pagos.module';
 import { PagosController } from './pagos/pagos.controller';
 import { DatosEmpresaModule } from './datos-empresa/datos-empresa.module';
 import { DatosEmpresaController } from './datos-empresa/datos-empresa.controller';
+import { DisponibilidadEventosController } from './disponibilidad-eventos/disponibilidad-eventos.controller';
+import { AdminAuthModule } from '../auth/admin-auth/admin-auth.module';
+import { AdminAuthController } from '../auth/admin-auth/admin-auth.controller';
+import { NotificacionesController } from './notificaciones/notificaciones.controller';
+import { ReportesModule } from './reportes/reportes.module';
+import { Reporte } from './reportes/entities/reporte.entity';
+import { ReportesController } from './reportes/reportes.controller';
 
 @Module({
     imports: [
@@ -51,10 +56,13 @@ import { DatosEmpresaController } from './datos-empresa/datos-empresa.controller
     EmailModule,
     ContratosModule,
     PagosModule,
-    DatosEmpresaModule
+    DatosEmpresaModule,
+    NotificacionesModule,
+    ReportesModule,
 ],
 
 controllers:[
+    NotificacionesController,
     UsersController,
     RolesController,
     ClientsController,
@@ -70,7 +78,9 @@ controllers:[
     ContratosController,
     UbicacionController,
     PagosController,
-    DatosEmpresaController
+    DatosEmpresaController,
+    DisponibilidadEventosController,
+    ReportesController
 
 ]
 

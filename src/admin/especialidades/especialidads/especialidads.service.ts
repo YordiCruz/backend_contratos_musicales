@@ -3,7 +3,7 @@ import { CreateEspecialidadDto } from './dto/create-especialidad.dto';
 import { UpdateEspecialidadDto } from './dto/update-especialidad.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Especialidad } from './entities/especialidad.entity';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { CategoriasEspecialidad } from '../categorias_especialidads/entities/categorias_especialidad.entity';
 import { ResponseEspecialidadDto } from './dto/response-especialidad.dto';
 import { FiltrosEspecialidadDto } from './dto/filtros-especialidad.dto';
@@ -31,16 +31,20 @@ export class EspecialidadsService {
       throw new BadRequestException('La categoría no existe');
     }
 
-    const existingEspecialidad = await this.especialidadRepo.findOne({
-      where: { nombre: dto.nombre },
-    });
+    const nombre = dto.nombre.trim();
 
-    if (existingEspecialidad) {
-      throw new BadRequestException('La especialidad ya existe');
-    }
+const existingEspecialidad = await this.especialidadRepo.findOne({
+  where: {
+    nombre: ILike(nombre)
+  }
+});
+
+if (existingEspecialidad) {
+  throw new BadRequestException('La especialidad ya existe');
+}
 
     const especialidad = this.especialidadRepo.create({
-      nombre: dto.nombre,
+      nombre: nombre.toLowerCase(),
       descripcion: dto.descripcion,
       categoria,
     });
@@ -55,8 +59,8 @@ const search = filters.search?.trim() || null;
 const estado = filters.estado?.trim() || null;
 
 
-  const page = filters.page ? Number(filters.page) : 1;
-  const limit = filters.limit ? Number(filters.limit) : 10;
+const page = filters.page ? Number(filters.page) : null;
+const limit = filters.limit ? Number(filters.limit) : null;
 
   const query = this.especialidadRepo
     .createQueryBuilder('especialidad')
@@ -93,10 +97,13 @@ if (estado) {
 // console.log(query.getParameters());
 // console.log('filters:', filters);
 
-  const especialidades = await query
+ if (page && limit) {
+  query
     .skip((page - 1) * limit)
-    .take(limit)
-    .getMany();
+    .take(limit);
+}
+
+const especialidades = await query.getMany();
 
   return especialidades.map(especial => ({
     id: especial.id,
@@ -123,7 +130,9 @@ if (estado) {
   async findOne(id: string): Promise<ResponseEspecialidadDto> {
     const especialidad = await this.especialidadRepo.findOne({
       where: { id },
-      relations: ['categoria'],
+      relations: {
+        categoria: true,
+      },
     });
 
     if (!especialidad) {
@@ -152,7 +161,9 @@ if (estado) {
  async update(id: string, dto: UpdateEspecialidadDto) {
   const especialidad = await this.especialidadRepo.findOne({
     where: { id },
-    relations: ['categoria'],
+    relations: {
+      categoria: true,
+    },
   });
 
   if (!especialidad) {

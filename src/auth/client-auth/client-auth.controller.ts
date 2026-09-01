@@ -1,9 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, HttpCode } from '@nestjs/common';
 import { ClientAuthService } from './client-auth.service';
 import { UpdateClientAuthDto } from './dto/update-client-auth.dto';
 import { Throttle } from '@nestjs/throttler';
 import { ClientLoginDto } from './dto/client-login.dto';
 import { ClientJwtGuard } from './guards/client-jwt.guard';
+import { CreateUserDto } from '../../admin/users/dto/create-user.dto';
+import { User } from '../../admin/users/entities/user.entity';
 
 @Controller('client-auth')
 export class ClientAuthController {
@@ -25,5 +27,19 @@ export class ClientAuthController {
 async refresh(@Body('refreshToken') token: string) {
   return this.clientAuthService.refresh(token);
 }
- 
+
+@Post('register')
+  async register(@Body() createUserDto: CreateUserDto): Promise<User> {
+    return this.clientAuthService.register(createUserDto);
+  }
+
+@HttpCode(200)
+@Post('logout')
+@UseGuards(ClientJwtGuard)
+logout(@Req() req: any) {
+  return {
+    message: 'Logout exitoso'
+  };
+}
+
 }

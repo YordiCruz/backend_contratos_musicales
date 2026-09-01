@@ -28,5 +28,8 @@ export class CategoriasEspecialidad {
     @OneToMany(()=> Especialidad, especialidad => especialidad.categoria)
     especialidades: Especialidad[]
 
+    @Column({ type: 'varchar', length: 100, nullable: true })
+    descripcion?:string
+
 
 }

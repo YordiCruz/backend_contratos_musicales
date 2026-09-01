@@ -1,7 +1,8 @@
-import { Contrato } from "src/admin/contratos/entities/contrato.entity";
-import { Persona } from "src/admin/personas/entities/persona.entity";
-import { User } from "src/admin/users/entities/user.entity";
+
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Persona } from "../../personas/entities/persona.entity";
+import { Contrato } from "../../contratos/entities/contrato.entity";
+import { User } from "../../users/entities/user.entity";
 
 @Entity('clients')
 export class Client {
@@ -9,7 +10,7 @@ export class Client {
   @PrimaryGeneratedColumn('uuid')
   id: string
 
-  @OneToOne(() => Persona, { eager: true, cascade: false })
+  @OneToOne(() => Persona, { cascade: false })
   @JoinColumn({ name: 'id_persona' })
   persona: Persona;
 
@@ -43,8 +44,9 @@ export class Client {
   @Column({ type: 'varchar', length: 20, default: 'activo' })
   estado: string;
 
-
-
+@OneToOne(() => User, (user) => user.cliente)
+@JoinColumn({ name: 'user_id' })
+user: User;
 
 
 }

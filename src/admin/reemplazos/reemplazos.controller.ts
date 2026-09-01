@@ -5,7 +5,7 @@ import { UpdateReemplazoDto } from './dto/update-reemplazo.dto';
 import { FiltrosReemplazoDto } from './dto/filtros-reemplazo.dto';
 import { AsignarEspecialidadDto } from './dto/asignar-especialidad.dto';
 import { AsignarVariasEspecialidadesDto } from './dto/asignar-varias-especialidades.dto';
-import { AdminJwtGuard } from 'src/auth/admin-auth/guards/admin-jwt.guard';
+import { AdminJwtGuard } from '../../auth/admin-auth/guards/admin-jwt.guard';
 
 @UseGuards(AdminJwtGuard)
 @Controller('reemplazos')

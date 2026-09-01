@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import {
   CreateNotificacioneDto,
   TipoNotificacion,
@@ -15,6 +15,9 @@ import { Integrante } from '../integrantes/entities/integrante.entity';
 import { IntegranteEspecialidad } from '../integrantes/entities/integrante-especialidad.entity';
 import { ResumenContratoDTO, SugerenciaDTO } from '../contratos/dto/resumen-contrato.dto';
 import { Reemplazo } from '../reemplazos/entities/reemplazo.entity';
+import { NotificacionesGateway } from './gateway/notificaciones.gateway';
+import { User } from '../users/entities/user.entity';
+import { Pago } from '../pagos/entities/pago.entity';
 
 @Injectable()
 export class NotificacionesService {
@@ -22,8 +25,9 @@ export class NotificacionesService {
     @InjectRepository(Notificacione)
     private readonly notificacioneRepo: Repository<Notificacione>,
 
-    @InjectRepository(Persona)
-    private readonly personaRepo: Repository<Persona>,
+
+    @InjectRepository(User)
+    private readonly userRepo: Repository<User>,
 
     @InjectRepository(IntegranteEspecialidad)
     private readonly integranteEspecialidadRepo: Repository<IntegranteEspecialidad>,
@@ -37,58 +41,123 @@ export class NotificacionesService {
     @InjectRepository(Reemplazo)
     private readonly reemplazoRepo: Repository<Reemplazo>,
 
+    @InjectRepository(Pago)
+    private readonly pagoRepo: Repository<Pago>,
+
     private readonly contratoService: ContratosService,
+    private readonly gateway: NotificacionesGateway,
+
+
+
   ) {}
+
+
+  async marcarComoLeida(id: string) {
+
+  const notif = await this.notificacioneRepo.findOneBy({ id });
+
+  if (!notif) {
+    throw new NotFoundException();
+  }
+
+  notif.leido = true;
+
+  return this.notificacioneRepo.save(notif);
+}
+  
 
 async generarNotificacion(
   tipo: TipoNotificacion,
   contrato: Contrato,
-  persona: Persona,
+  user: User,
   mensaje?: string,
   resumen?: ResumenContratoDTO,
+  pago?: Pago,
+  accion?: CreateNotificacioneDto['accion'],
+
 ): Promise<CreateNotificacioneDto> {
 
   switch (tipo) {
 
+    
+
     case TipoNotificacion.INTEGRANTE:
     case TipoNotificacion.REEMPLAZO:
+      const fechaFormatead = new Date(
+  contrato.fecha_evento
+).toLocaleDateString('es-BO', {
+  weekday: 'long',
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
       return {
         tipo,
-        destinatarioId: persona.id,
+        destinatarioId: user.id,
         contratoId: contrato.id_contrato,
         mensaje: mensaje ??
-          `Evento el ${contrato.fecha_evento} (${contrato.bloque}), en ${contrato.ubicacion.nombre}. Horas: ${contrato.horas_contratadas}`,
+          `Evento el ${fechaFormatead} (${contrato.bloque}), en ${contrato.ubicacion.nombre}. Horas: ${contrato.horas_contratadas}`,
         fecha: new Date(),
+        accion: 'INTEGRANTE'
       };
 
     case TipoNotificacion.CLIENTE:
+      const fechaFormatea = new Date(
+  contrato.fecha_evento
+).toLocaleDateString('es-BO', {
+  weekday: 'long',
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
       return {
         tipo,
-        destinatarioId: persona.id,
+        destinatarioId: user.id,
         contratoId: contrato.id_contrato,
         mensaje: mensaje ??
-          `Su contrato para el ${contrato.fecha_evento} (${contrato.bloque}), en ${contrato.ubicacion.nombre}, está ${contrato.estado}`,
+          `Su contrato para el ${fechaFormatea} (${contrato.bloque}), en ${contrato.ubicacion.nombre}, está ${contrato.estado}`,
         fecha: new Date(),
+        accion: accion ?? 'CLIENTE' 
       };
 
     case TipoNotificacion.ADMIN:
+       const fechaFormateada = new Date(
+  contrato.fecha_evento
+).toLocaleDateString('es-BO', {
+  weekday: 'long',
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+
       return {
         tipo,
-        destinatarioId: persona.id,
+        destinatarioId: user.id,
         contratoId: contrato.id_contrato,
         mensaje: mensaje ??
-          `Nuevo contrato: ${contrato.evento.nombre} - ${contrato.fecha_evento} (${contrato.bloque}) a hrs: ${contrato.hora_inicio}, horas contratadas: ${contrato.horas_contratadas}, Estado: ${contrato.estado}, ¿Desea informar a los integrantes?`,
+          `Nuevo contrato: ${contrato.evento.nombre} (${fechaFormateada}) Servicio: ${contrato.tipo_servicio} Turno: ${contrato.bloque} A hrs: ${contrato.hora_inicio} Horas requeridas: ${contrato.horas_contratadas} ¿Desea confirmar y solicitar adelanto?`,
         fecha: new Date(),
+        pagoId: pago?.id_pago,
+        accion: accion ?? 'CONTRATO'
       };
 
     case TipoNotificacion.ADMIN_RESUMEN:
+        const fechaFormat= new Date(
+  contrato.fecha_evento
+).toLocaleDateString('es-BO', {
+  weekday: 'long',
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+      
       return {
         tipo,
-        destinatarioId: persona.id,
+        destinatarioId: user.id,
         contratoId: contrato.id_contrato,
         mensaje: JSON.stringify({
           evento: contrato.evento.nombre,
-          fecha_evento: contrato.fecha_evento,
+          fecha_evento: fechaFormat,
           bloque: contrato.bloque,
           ubicacion: contrato.ubicacion.nombre,
           aceptados: resumen?.aceptados,
@@ -103,45 +172,242 @@ async generarNotificacion(
           ),
         }),
         fecha: new Date(),
+        accion: 'ADMIN_RESUMEN'
       };
   }
 }
-  async enviar(
-    dto: CreateNotificacioneDto,
-  ): Promise<{ status: string; notificacion: Notificacione }> {
-    const persona = await this.personaRepo.findOne({
-      where: { id: dto.destinatarioId },
-    });
-    const contrato = await this.contratoRepo.findOne({
-      where: { id_contrato: dto.contratoId },
-    });
 
-    if (!persona || !contrato) {
-      throw new Error('Persona o contrato no encontrados');
-    }
 
-    const notificacion = this.notificacioneRepo.create({
-      tipo: dto.tipo,
-      persona,
-      contrato,
-      mensaje: dto.mensaje,
-      fecha: dto.fecha,
-    });
 
-    await this.notificacioneRepo.save(notificacion);
 
-    // 👇 Quitamos el envío de email, solo guardamos en BD
-    // if (
-    //   dto.tipo === TipoNotificacion.INTEGRANTE ||
-    //   dto.tipo === TipoNotificacion.REEMPLAZO ||
-    //   dto.tipo === TipoNotificacion.CLIENTE
-    // ) {
-    //   await this.emailService.send(...);
-    // }
 
-    // Para IN-APP simplemente queda registrado en la BD
-    return { status: 'ok', notificacion };
+async enviar(
+  dto: CreateNotificacioneDto,
+): Promise<{ status: string; notificacion: Notificacione }> {
+
+  const user = await this.userRepo.findOne({
+    where: {
+      id: dto.destinatarioId,
+    },
+  });
+
+  const contrato = await this.contratoRepo.findOne({
+    where: {
+      id_contrato: dto.contratoId,
+    },
+  });
+
+  if (!user || !contrato) {
+    throw new Error('Usuario o contrato no encontrados');
   }
+
+  let pago: Pago | undefined;
+
+if (dto.pagoId) {
+  pago = await this.pagoRepo.findOne({
+    where: {
+      id_pago: dto.pagoId,
+    },
+  }) ?? undefined;
+}
+
+  const notificacion = this.notificacioneRepo.create({
+    tipo: dto.tipo,
+    user,
+    contrato,
+    pago,
+    mensaje: dto.mensaje,
+    fecha: dto.fecha,
+    estado: 'pendiente',
+    leido: false,
+    accion: dto.accion
+  });
+
+  await this.notificacioneRepo.save(notificacion);
+
+  // 🔥 SOCKET REALTIME
+  this.gateway.sendToUser(
+    user.id,
+    {
+      id: notificacion.id,
+      tipo: notificacion.tipo,
+      mensaje: notificacion.mensaje,
+      fecha: notificacion.fecha,
+      leido: notificacion.leido,
+      estado: notificacion.estado,
+
+      accion: notificacion.accion,   
+    pago: notificacion.pago,       
+    contrato: notificacion.contrato 
+    }
+  );
+
+  console.log('🔔 enviada a user:', user.id);
+
+  return {
+    status: 'ok',
+    notificacion,
+  };
+}
+
+
+//para recuperar contraséña
+
+async generarNotificacionSistema(
+  tipo: TipoNotificacion,
+  user: User,
+  mensaje: string,
+  accion?: CreateNotificacioneDto['accion'],
+  usuarioOrigenId?:string
+): Promise<CreateNotificacioneDto> {
+
+
+  return {
+
+    tipo,
+
+    destinatarioId: user.id,
+
+    mensaje,
+
+    fecha: new Date(),
+
+    accion: accion ?? 'RECUPERAR_PASSWORD',
+
+    contratoId: '',
+
+    pagoId: '',
+
+    usuarioOrigenId
+
+  };
+
+}
+async enviarNotificacionSistema(
+  dto: CreateNotificacioneDto,
+): Promise<{status:string, notificacion:Notificacione}> {
+
+
+  const user = await this.userRepo.findOne({
+    where:{
+      id:dto.destinatarioId
+    }
+  });
+
+
+  if(!user){
+
+    throw new BadRequestException(
+      'Usuario no encontrado'
+    );
+
+  }
+
+
+  const user2 = await this.userRepo.findOne({
+    where:{
+      id:dto.usuarioOrigenId
+    }
+  });
+
+  console.log('este es el user2', user2);
+  
+  if(!user2){
+
+    throw new BadRequestException(
+      'Usuario no encontrado'
+    );
+
+  }
+
+  user2.solicitud_recuperacion = true
+  
+  await this.userRepo.save(
+    user2
+  );
+
+
+  const notificacion =
+  this.notificacioneRepo.create({
+
+    tipo:dto.tipo,
+
+    user,
+
+    contrato:null,
+
+    pago:null,
+
+    mensaje:dto.mensaje,
+
+    fecha:dto.fecha,
+
+    estado:'pendiente',
+
+    leido:false,
+
+    accion:dto.accion,
+
+    usuarioOrigenId: user2.id
+
+  });
+
+
+
+  await this.notificacioneRepo.save(
+    notificacion
+  );
+
+
+
+  // SOCKET
+
+  this.gateway.sendToUser(
+    user.id,
+    {
+
+      id:notificacion.id,
+
+      tipo:notificacion.tipo,
+
+      mensaje:notificacion.mensaje,
+
+      fecha:notificacion.fecha,
+
+      leido:notificacion.leido,
+
+      estado:notificacion.estado,
+
+      accion:notificacion.accion,
+
+      pago:null,
+
+      contrato:null
+
+    }
+  );
+
+
+
+  console.log(
+    '🔔 enviada notificación sistema a user:',
+    user.id
+  );
+
+
+
+  return {
+
+    status:'ok',
+
+    notificacion
+
+  };
+
+
+}
+
+///
 
 
 
@@ -158,7 +424,11 @@ async generarNotificacion(
         especialidad: { id: In(idsEspecialidades) },
         tipo: 'primario', // 👈 solo especialidad primaria
       },
-      relations: ['integrante', 'integrante.persona'],
+      relations:{
+        integrante:{
+          user: true
+        }
+    },
     });
 
     const integrantes = relaciones.map((r) => r.integrante);
@@ -172,7 +442,7 @@ async generarNotificacion(
       const dto = await this.generarNotificacion(
         TipoNotificacion.INTEGRANTE,
         contrato,
-        integrante.persona,
+        integrante.user,
       );
       const notif = await this.enviar(dto);
       results.push(notif);
@@ -184,37 +454,39 @@ async generarNotificacion(
   }
 
 
-
-
-  async notificaReemplazos(contratoId: string) {
+async notificaReemplazos(contratoId: string) {
   console.log('🔔 Iniciando notificarReemplazos para contrato:', contratoId);
 
-  const contrato = await this.contratoRepo.findOne({ where: { id_contrato: contratoId } });
+  const contrato = await this.contratoRepo.findOne({
+    where: { id_contrato: contratoId },
+  });
+
   if (!contrato) throw new Error('Contrato no encontrado');
 
   const resumen = await this.contratoService.getResumenContrato(contratoId);
 
-
   type NotifResult = { status: string; notificacion: Notificacione };
 
-const results: NotifResult[] = [];
+  const results: NotifResult[] = [];
 
   for (const s of resumen.sugerencias) {
     for (const candidato of s.candidatos) {
 
       const replacement = await this.reemplazoRepo.findOne({
         where: { id: candidato.id },
-        relations: ['persona'],
+        relations: {
+          user: true,
+        },
       });
 
-      if (!replacement?.persona) continue;
+      if (!replacement?.user) continue;
 
-      const persona = replacement.persona;
+      const user = replacement.user;
 
       // 🔥 1. Verificar si YA existe una notificación pendiente
       const existente = await this.notificacioneRepo.findOne({
         where: {
-          persona: { id: persona.id },
+          user: { id: user.id }, // 🔥 antes persona
           contrato: { id_contrato: contratoId },
           tipo: TipoNotificacion.REEMPLAZO,
           estado: 'pendiente',
@@ -222,7 +494,9 @@ const results: NotifResult[] = [];
       });
 
       if (existente) {
-        console.log(`⚠️ Ya existe notificación pendiente para ${persona.nombre}, no se crea otra.`);
+        console.log(
+          `⚠️ Ya existe notificación pendiente para ${user.email}, no se crea otra.`,
+        );
         continue;
       }
 
@@ -230,43 +504,53 @@ const results: NotifResult[] = [];
       const dto = await this.generarNotificacion(
         TipoNotificacion.REEMPLAZO,
         contrato,
-        persona
+        user,
       );
 
       const notif = await this.enviar(dto);
+
       console.log('💾 Notificación creada:', notif.notificacion.id);
 
       results.push(notif);
     }
   }
 
-  return { status: 'ok', total: results.length, notificaciones: results };
+  return {
+    status: 'ok',
+    total: results.length,
+    notificaciones: results,
+  };
 }
 
-
+ 
 async notificarReemplazoIndividual(contratoId: string, reemplazoId: string) {
   const contrato = await this.contratoRepo.findOne({
     where: { id_contrato: contratoId },
-    relations: ['ubicacion', 'evento'],
+    relations: {
+      ubicacion: true,
+       evento:true
+      },
   });
 
   if (!contrato) throw new Error('Contrato no encontrado');
 
   const replacement = await this.reemplazoRepo.findOne({
     where: { id: reemplazoId },
-    relations: ['persona'],
+    relations: {
+      user: true
+    },
   });
 
-  if (!replacement || !replacement.persona) {
-    throw new Error('Reemplazo o persona no encontrado');
+  if (!replacement || !replacement.user) {
+    throw new Error('Reemplazo o usuario no encontrado');
   }
 
-  const persona = replacement.persona;
+  const usuario = replacement.user;
 
   // 🔥 1. Verificar si ya existe notificación pendiente
   const existente = await this.notificacioneRepo.findOne({
     where: {
-      persona: { id: persona.id },
+      user: { id: usuario.id },
       contrato: { id_contrato: contratoId },
       tipo: TipoNotificacion.REEMPLAZO,
       estado: 'pendiente',
@@ -276,7 +560,7 @@ async notificarReemplazoIndividual(contratoId: string, reemplazoId: string) {
   if (existente) {
     return {
       status: 'skip',
-      mensaje: `Ya existe una notificación pendiente para ${persona.nombre}`,
+      mensaje: `Ya existe una notificación pendiente para ${usuario.persona?.nombre}`,
       notificacion: existente,
     };
   }
@@ -285,14 +569,14 @@ async notificarReemplazoIndividual(contratoId: string, reemplazoId: string) {
   const dto = await this.generarNotificacion(
     TipoNotificacion.REEMPLAZO,
     contrato,
-    persona,
+    usuario,
   );
 
   const notif = await this.enviar(dto);
 
   return {
     status: 'ok',
-    mensaje: `Notificación enviada a ${persona.nombre}`,
+    mensaje: `Notificación enviada a ${usuario.persona?.nombre}`,
     notificacion: notif.notificacion,
   };
 }
@@ -301,7 +585,12 @@ async notificarReemplazoIndividual(contratoId: string, reemplazoId: string) {
 async notificarAdelanto(contratoId: string) {
   const contrato = await this.contratoRepo.findOne({
     where: { id_contrato: contratoId },
-    relations: ['cliente', 'cliente.persona', 'ubicacion'],
+    relations:  { 
+      cliente: {
+        user: true 
+      }, 
+      ubicacion: true
+    },
   });
 
   if (!contrato) throw new NotFoundException('Contrato no encontrado');
@@ -310,7 +599,7 @@ async notificarAdelanto(contratoId: string) {
   const existente = await this.notificacioneRepo.findOne({
     where: {
       contrato: { id_contrato: contratoId },
-      persona: { id: contrato.cliente.persona.id },
+      user: { id: contrato.cliente.persona.id },
       tipo: TipoNotificacion.CLIENTE,
       estado: 'pendiente',
     },
@@ -328,7 +617,7 @@ async notificarAdelanto(contratoId: string) {
   const dto = await this.generarNotificacion(
     TipoNotificacion.CLIENTE,
     contrato,
-    contrato.cliente.persona,
+    contrato.cliente.user,
     `Estimado cliente, para continuar con su contrato del ${contrato.fecha_evento} (${contrato.bloque}) en ${contrato.ubicacion.nombre}, es necesario realizar el pago de adelanto.`
   );
 
@@ -338,4 +627,20 @@ async notificarAdelanto(contratoId: string) {
   findAll() {
     return this.notificacioneRepo.find();
   }
+
+
+  async obtenerMisNotificaciones(userId: string) {
+  return this.notificacioneRepo.find({
+    where: {
+      user: { id: userId },
+    },
+    order: {
+      fecha: 'DESC',
+    },
+    relations: {
+      contrato: true,
+    },
+  });
+}
+
 }

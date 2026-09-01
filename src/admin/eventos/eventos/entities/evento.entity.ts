@@ -1,8 +1,8 @@
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Categoria } from "../../categorias/entities/categoria.entity";
-import { User } from "src/admin/users/entities/user.entity";
 import { Media } from "../../media/entities/media.entity";
-import { Contrato } from "src/admin/contratos/entities/contrato.entity";
+import { Contrato } from "../../../contratos/entities/contrato.entity";
+import { User } from "../../../users/entities/user.entity";
 
 @Entity('events')
 export class Evento {

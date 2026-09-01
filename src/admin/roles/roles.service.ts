@@ -3,9 +3,9 @@ import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Role } from './entities/role.entity';
-import { Repository } from 'typeorm';
-import { User } from 'src/admin/users/entities/user.entity';
+import { In, Repository } from 'typeorm';
 import { AssignRolesDto } from './dto/assign-role.dto';
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class RolesService {
@@ -26,44 +26,45 @@ export class RolesService {
 
   async findAll() {
     return this.rolerepo.find({
-      relations: ['permissions'],});
+      relations: {
+        permissions: true
+      }
+        ,});
   }
 
- async assignRoles(userId: string, dto: AssignRolesDto) {
+ 
+  async assignRole(userId: string, dto: AssignRolesDto) {
+
   const user = await this.userrepo.findOne({
     where: { id: userId },
-    relations: ['roles'],
+    relations: {
+      roles: true
+    }
   });
 
-  if (!user) throw new Error('Usuario no encontrado');
-
-  const roles = await this.rolerepo.findByIds(dto.rolesIds);
-
-  if (roles.length !== dto.rolesIds.length) {
-    throw new Error('Uno o más roles no existen');
+  if (!user) {
+    throw new Error('Usuario no encontrado');
   }
 
-  // Filtrar roles ya asignados
-  const rolesToAdd = roles.filter(
-    (role) => !user.roles.some((r) => r.id === role.id)
-  );
 
-  if (rolesToAdd.length === 0) {
+  const role = await this.rolerepo.findOne({
+    where: {
+      id: dto.rolesIds
+    }
+  });
 
-  const plural = dto.rolesIds.length > 1
-    ? 'Los roles estaban asignados'
-    : 'El rol estaba asignado';
-
-  return { message: plural };
-}
+  if (!role) {
+    throw new Error('El rol no existe');
+  }
 
 
-  user.roles = [...user.roles, ...rolesToAdd];
+  user.roles = [role];
+
   await this.userrepo.save(user);
 
-  const plural = rolesToAdd.length > 1 ? 'Roles asignados correctamente' : 'Rol asignado correctamente';
-
-  return { message: plural };
+  return {
+    message: 'Rol asignado correctamente'
+  };
 }
 
 
@@ -79,7 +80,9 @@ export class RolesService {
 async removeRole(userId: string, roleId: string) {
   const user = await this.userrepo.findOne({
     where: { id: userId },
-    relations: ['roles'],
+    relations: {
+      roles: true
+    },
   });
 
   if (!user) throw new Error('Usuario no encontrado');

@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID } from "class-validator";
+import { IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID, Length, Matches } from "class-validator";
 
 export class CreateEventoDto {
   @IsUUID()
@@ -7,7 +7,10 @@ export class CreateEventoDto {
   id_categoria: string;
 
   @IsString()
-  @IsNotEmpty()
+  @Length(3, 100)
+  @Matches(/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s-]+$/, {
+  message: 'El nombre contiene caracteres no permitidos'
+})
   nombre: string;
 
   @IsOptional()

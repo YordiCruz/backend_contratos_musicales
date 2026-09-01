@@ -1,6 +1,6 @@
 import { InjectRepository } from '@nestjs/typeorm';
-import { Categoria } from 'src/admin/eventos/categorias/entities/categoria.entity';
 import { Repository } from 'typeorm';
+import { Categoria } from '../../admin/eventos/categorias/entities/categoria.entity';
 
 export class CategoriasEventoSeeder {
   constructor(

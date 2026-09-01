@@ -1,14 +1,19 @@
-import { Body, Controller, Get, Param, Post, Req } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, Req, UseGuards } from "@nestjs/common";
 import { PagosService } from "./pagos.service";
+import { ClientJwtGuard } from "../../auth/client-auth/guards/client-jwt.guard";
+import { AdminJwtGuard } from "../../auth/admin-auth/guards/admin-jwt.guard";
 
+@UseGuards(AdminJwtGuard)
 @Controller('pagos')
 export class PagosController {
   constructor(private readonly pagosService: PagosService) {}
 
-  @Post()
-  registrar(@Body() body, @Req() req) {
-    return this.pagosService.registrarPago(body);
-  }
+
+ @Post('/registrar2')
+registrarPago2(@Body() dto: any) {
+  return this.pagosService.registrarPago2(dto);
+}
+  
 
   @Get(':contratoId')
   listar(@Param('contratoId') contratoId: string) {
@@ -32,5 +37,17 @@ async resumen(@Param('id') id: string) {
   async confirmar(@Param('transaccionId') transaccionId: string) {
     return this.pagosService.confirmarPagoSimulado(transaccionId);
   }
+
+
+  @Post(':id/solicitar-adelanto')
+  async solicitarAdelanto(@Param('id') id: string, @Body() body) {
+    return this.pagosService.solicitarAdelanto(id, body);
+  }
+
+
+@Patch(':id/confirmar')
+confirmarPago(@Param('id') id: string) {
+  return this.pagosService.confirmarPago2(id);
+}
 
 }

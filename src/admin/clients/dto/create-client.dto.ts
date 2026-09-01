@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {  ValidateNested } from 'class-validator';
-import { CreatePersonaDto } from 'src/admin/personas/dto/create-persona.dto';
 import { CreateClientDataDto } from './create-client-data.dto';
+import { CreatePersonaDto } from '../../personas/dto/create-persona.dto';
 
 export class CreateClientDto {
 

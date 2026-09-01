@@ -1,6 +1,6 @@
 import { Entity, Column, ManyToOne, PrimaryColumn, CreateDateColumn, JoinColumn } from 'typeorm';
 import { Contrato } from './contrato.entity';
-import { Reemplazo } from 'src/admin/reemplazos/entities/reemplazo.entity';
+import { Reemplazo } from '../../reemplazos/entities/reemplazo.entity';
 
 @Entity('contrato_reemplazo')
 export class ContratoReemplazo {

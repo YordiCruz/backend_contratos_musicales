@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Contrato } from "./contrato.entity";
-import { Especialidad } from "src/admin/especialidades/especialidads/entities/especialidad.entity";
+import { Especialidad } from "../../especialidades/especialidads/entities/especialidad.entity";
 
 @Entity('contrato_especialidades')
 export class ContratoEspecialidad {

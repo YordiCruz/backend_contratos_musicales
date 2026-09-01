@@ -3,7 +3,8 @@ import { CreatePersonaDto } from './dto/create-persona.dto';
 import { PersonasService } from './personas.service';
 import { UpdatePersonaDto } from './dto/update-persona.dto';
 import { FiltrosPersonaDto } from './dto/filtros-persona.dto';
-import { AdminJwtGuard } from 'src/auth/admin-auth/guards/admin-jwt.guard';
+import { AdminJwtGuard } from '../../auth/admin-auth/guards/admin-jwt.guard';
+import { ClientJwtGuard } from '../../auth/client-auth/guards/client-jwt.guard';
 
 @UseGuards(AdminJwtGuard)
 @Controller('personas')

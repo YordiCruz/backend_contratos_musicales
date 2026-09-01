@@ -2,13 +2,13 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Persona } from 'src/admin/personas/entities/persona.entity';
 import { DataSource, Repository } from 'typeorm';
 import { Client } from './entities/client.entity';
 import { FiltroClientDto } from './dto/filtro-client.dto';
 import { ClientResponseDto } from './dto/client-response.dto';
 import { UpdateResponseDto } from './dto/update-response.dto';
 import { CreateClientDataDto } from './dto/create-client-data.dto';
+import { Persona } from '../personas/entities/persona.entity';
 
 @Injectable()
 export class ClientsService {
@@ -39,19 +39,22 @@ export class ClientsService {
     });
 
     if (existe) {
-      throw new Error(`La persona con documento '${personaDto.documento_identidad}' ya existe`);
+      throw new BadRequestException(`La persona con documento '${personaDto.documento_identidad}' ya existe`);
     }
 
     // 2. Guardar persona
     const persona = await manager.save(Persona, personaDto);
 
-    const nuevoCliente = manager.create(Client, {
-      ...clienteDto,
-      persona,
-      registrado_por: user?.id ? { id: user.id } : undefined
+   const origenRegistro = user?.role?.toLowerCase() === 'admin' 
+  ? 'admin' 
+  : createClientDto.cliente.origen_registro;
 
-    });
-
+const nuevoCliente = manager.create(Client, {
+  ...clienteDto,
+  origen_registro: origenRegistro,
+  persona,
+  registrado_por: user?.id ? { id: user.id } : undefined
+});
     // 4. Guardar usuario
     return await manager.save(Client, nuevoCliente);
   });
@@ -122,7 +125,10 @@ export class ClientsService {
   findOne(id: string) {
     const cliente = this.clienteRepo.findOne({
       where: { id },
-      relations: ['registrado_por','persona'],
+      relations: {
+        persona: true,
+        registrado_por: true
+      },
 
     });
 

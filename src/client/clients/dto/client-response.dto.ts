@@ -1,4 +1,4 @@
-import { ResponsePersonaDto } from "src/admin/personas/dto/reponse-persona.dto";
+import { ResponsePersonaDto } from "../../../admin/personas/dto/reponse-persona.dto";
 
 export class ClientResponseDto {
   id: string;

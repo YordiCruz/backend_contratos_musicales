@@ -1,5 +1,5 @@
-import { Contrato } from 'src/admin/contratos/entities/contrato.entity';
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Contrato } from '../../contratos/entities/contrato.entity';
 
 @Entity('disponibilidad_eventos')
 export class DisponibilidadEvento {
@@ -16,5 +16,7 @@ export class DisponibilidadEvento {
   estado: string; // libre | ocupado
 
   @ManyToOne(() => Contrato, contrato => contrato.disponibilidades, { nullable: true })
+  @JoinColumn({ name: 'id_contrato' })
   contrato: Contrato | null;
+  
 }

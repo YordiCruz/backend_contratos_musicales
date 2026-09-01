@@ -34,7 +34,9 @@ export class CategoriasService {
   }
 
   findAll() {
-    return this.caterepo.find()
+    return this.caterepo.find({
+      withDeleted:true
+    })
   }
 
   async findOne(id: string) {

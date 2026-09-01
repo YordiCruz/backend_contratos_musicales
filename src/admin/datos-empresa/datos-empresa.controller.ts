@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards } from '@nes
 import { DatosEmpresaService } from './datos-empresa.service';
 import { CreateDatosEmpresaDto } from './dto/create-datos-empresa.dto';
 import { UpdateDatosEmpresaDto } from './dto/update-datos-empresa.dto';
-import { AdminJwtGuard } from 'src/auth/admin-auth/guards/admin-jwt.guard';
+import { AdminJwtGuard } from '../../auth/admin-auth/guards/admin-jwt.guard';
 
 @UseGuards(AdminJwtGuard)
 @Controller('datos-empresa')

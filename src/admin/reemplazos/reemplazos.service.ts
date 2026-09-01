@@ -3,7 +3,7 @@ import { CreateReemplazoDto } from './dto/create-reemplazo.dto';
 import { UpdateReemplazoDto } from './dto/update-reemplazo.dto';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Reemplazo } from './entities/reemplazo.entity';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { Persona } from '../personas/entities/persona.entity';
 import { FiltrosReemplazoDto } from './dto/filtros-reemplazo.dto';
 import { ResponseReemplazoDto } from './dto/response-reemplazo.dto';
@@ -41,17 +41,32 @@ export class ReemplazosService {
       });
   
       // 2. Si no existe, crearla
-      if (!persona) {
-        persona = await manager.save(Persona, personaDto);
-      }
+      if (persona) {
+
+  if (
+    persona.nombre !== personaDto.nombre ||
+    persona.apellido !== personaDto.apellido ||
+    persona.telefono !== personaDto.telefono ||
+    persona.email !== personaDto.email
+  ) {
+    throw new BadRequestException(
+      'Ya existe una persona con ese documento, pero los datos no coinciden.'
+    );
+  }
+
+} else {
+
+  persona = await manager.save(Persona, personaDto);
+
+}
   
       // 3. Validar que no sea ya reemplazo
       const yaReemplazo = await manager.findOne(Reemplazo, {
-        where: { persona: { id: persona.id } }
+        where: { persona: { id: persona!.id } }
       });
   
       if (yaReemplazo) {
-        throw new Error('Esta persona ya es un reemplazo');
+        throw new BadRequestException('Esta persona ya es un reemplazo');
       }
   
       // 4. Crear reemplazo
@@ -168,53 +183,100 @@ export class ReemplazosService {
   
    }
   
-    async update(id: string, updateReemplazoDto: UpdateReemplazoDto): Promise<ResponseUpdateReemplazoDto> {
-      const reempla = await this.reemplazoRepo.findOne({where :{id} })
-      if (!reempla) {
-        throw new Error('Reemplazo no encontrado');
-      }
-  
-        // ❗ Evitar que el DTO pise el ID
-    if ('id' in updateReemplazoDto) {
-      delete (updateReemplazoDto as any).id;
+    async update(
+  id: string,
+  dto: UpdateReemplazoDto,
+): Promise<ResponseUpdateReemplazoDto> {
+
+  return await this.dataSource.transaction(async manager => {
+
+    const reemplazo = await manager.findOne(Reemplazo, {
+      where: { id },
+      relations: {
+        especialidadesAsignadas: true,
+      },
+    });
+
+    if (!reemplazo) {
+      throw new NotFoundException('Reemplazo no encontrado');
     }
-  
-  
-     // Campos que NO deben actualizarse nunca
+
+    const { especialidades, ...datos } = dto;
+
     const camposProtegidos = [
       'id',
       'persona',
       'id_persona',
       'creado_en',
-      'eliminado_en',
       'actualizado_en',
+      'eliminado_en',
     ];
-  
+
     for (const campo of camposProtegidos) {
-      if (campo in updateReemplazoDto) {
-        delete (updateReemplazoDto as any)[campo];
-      }
+      delete (datos as any)[campo];
     }
-  
-  
-      const update = Object.assign(reempla, updateReemplazoDto)
-      const saved = await this.reemplazoRepo.save(update)
-      if (!saved) {
-    throw new Error('No se pudo actualizar el reemplazo');
-  }
-  
-      return {
-        id: saved.id,
-        tarifa_base_hora: saved.tarifa_base_hora,
-        moneda: saved.moneda,
-        estado: saved.estado,
-        disponible: saved.disponible,
-        creado_en: saved.creado_en,
-        actualizado_en: saved.actualizado_en,
-        eliminado_en: saved.eliminado_en ?? null
-       
+
+    Object.assign(reemplazo, datos);
+
+    const reemplazoGuardado = await manager.save(Reemplazo, reemplazo);
+
+    // ----------------------------------
+    // Actualizar especialidades
+    // ----------------------------------
+    if (especialidades) {
+
+      const repoRE = manager.getRepository(ReemplazoEspecialidad);
+
+      await repoRE.delete({
+        reemplazo: {
+          id: reemplazo.id,
+        },
+      });
+
+      const especialidadesBD = await manager.find(Especialidad, {
+        where: {
+          id: In(especialidades.map(e => e.id_especialidad)),
+        },
+      });
+
+      if (especialidadesBD.length !== especialidades.length) {
+        throw new NotFoundException(
+          'Una o más especialidades no existen',
+        );
       }
+
+      for (let i = 0; i < especialidades.length; i++) {
+
+        const esp = especialidadesBD.find(
+          e => e.id === especialidades[i].id_especialidad,
+        );
+
+        await repoRE.save(
+          repoRE.create({
+            reemplazo,
+            especialidad: esp!,
+            tipo: i === 0 ? 'primario' : 'secundario',
+          }),
+        );
+
+      }
+
     }
+
+    return {
+      id: reemplazoGuardado.id,
+      tarifa_base_hora: reemplazoGuardado.tarifa_base_hora,
+      moneda: reemplazoGuardado.moneda,
+      estado: reemplazoGuardado.estado,
+      disponible: reemplazoGuardado.disponible,
+      creado_en: reemplazoGuardado.creado_en,
+      actualizado_en: reemplazoGuardado.actualizado_en,
+      eliminado_en: reemplazoGuardado.eliminado_en ?? null,
+    };
+
+  });
+
+}
   
   
    async remove(id: string) {
@@ -264,7 +326,11 @@ async asignarEspecialidad(id: string, dto: AsignarEspecialidadDto) {
   // Buscar al reemplazo con sus especialidades asignadas
   const reemplazo = await this.reemplazoRepo.findOne({
     where: { id },
-    relations: ['especialidadesAsignadas', 'especialidadesAsignadas.especialidad'],
+    relations: {
+      especialidadesAsignadas: {
+      especialidad: true
+      },
+    }
   });
 
   if (!reemplazo) throw new NotFoundException('Reemplazo no encontrado');
@@ -315,7 +381,11 @@ async asignarMultiplesEspecialidades(id: string, dto: AsignarVariasEspecialidade
   // Buscar al reemplazo con sus especialidades asignadas
   const reemplazo = await this.reemplazoRepo.findOne({
     where: { id },
-    relations: ['especialidadesAsignadas', 'especialidadesAsignadas.especialidad'],
+    relations:  {
+      especialidadesAsignadas: {
+      especialidad: true
+      },
+    }
   });
 
   if (!reemplazo) {
@@ -323,8 +393,11 @@ async asignarMultiplesEspecialidades(id: string, dto: AsignarVariasEspecialidade
   }
 
   // Buscar todas las especialidades solicitadas
-  const especialidades = await this.especialidadRepo.findByIds(
-    dto.especialidades.map(e => e.id_especialidad),
+  const especialidades = await this.especialidadRepo.findBy({ 
+    id: In(
+    dto.especialidades.map(e => e.id_especialidad)
+    ),
+   }
   );
 
   if (especialidades.length !== dto.especialidades.length) {
@@ -340,7 +413,7 @@ async asignarMultiplesEspecialidades(id: string, dto: AsignarVariasEspecialidade
   const nuevas = dto.especialidades.filter(e => !idsActuales.has(e.id_especialidad));
 
   if (nuevas.length === 0) {
-    return { message: 'Todas las especialidades ya estaban asignadas' };
+    throw new BadRequestException('Todas las especialidades ya estaban asignadas');
   }
 
   // Verificar si ya existe una primaria
@@ -381,7 +454,12 @@ async eliminarEspecialidad(id: string, id_especialidad: string) {
   // Buscar al reemplazo con sus especialidades asignadas
   const reemplazo = await this.reemplazoRepo.findOne({
     where: { id },
-    relations: ['especialidadesAsignadas', 'especialidadesAsignadas.especialidad'],
+    relations: {
+      especialidadesAsignadas: 
+      {
+        especialidad: true
+      }
+    },
   });
 
   if (!reemplazo) {
@@ -411,7 +489,11 @@ async listaEspecialidades(id: string) {
   // Buscar al reemplazo con sus especialidades asignadas
   const reemplazo = await this.reemplazoRepo.findOne({
     where: { id },
-    relations: ['especialidadesAsignadas', 'especialidadesAsignadas.especialidad'],
+    relations: {
+      especialidadesAsignadas: {
+        especialidad: true
+      }
+    }
   });
 
   if (!reemplazo) {

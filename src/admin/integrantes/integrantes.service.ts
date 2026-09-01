@@ -1,7 +1,7 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateIntegranteDto } from './dto/create-integrante.dto';
 import { Integrante } from './entities/integrante.entity';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Persona } from '../personas/entities/persona.entity';
 import { FiltroIntegranteDataDto } from './dto/filtro-integrante-data.dto';
@@ -40,17 +40,33 @@ async create(createIntegranteDto: CreateIntegranteDto, user: any): Promise<Integ
     });
 
     // 2. Si no existe, crearla
-    if (!persona) {
-      persona = await manager.save(Persona, personaDto);
-    }
+
+    if (persona) {
+
+  if (
+    persona.nombre !== personaDto.nombre ||
+    persona.apellido !== personaDto.apellido ||
+    persona.telefono !== personaDto.telefono ||
+    persona.email !== personaDto.email
+  ) {
+    throw new BadRequestException(
+      'Ya existe una persona con ese documento, pero los datos no coinciden.'
+    );
+  }
+
+} else {
+
+  persona = await manager.save(Persona, personaDto);
+
+}
 
     // 3. Validar que no sea ya integrante
     const yaIntegrante = await manager.findOne(Integrante, {
-      where: { persona: { id: persona.id } }
+      where: { persona: { id: persona!.id } }
     });
 
     if (yaIntegrante) {
-      throw new Error('Esta persona ya es integrante');
+      throw new BadRequestException('Esta persona ya es integrante');
     }
 
     // 4. Crear integrante
@@ -165,59 +181,106 @@ async findAll(
 
  }
 
-  async update(id: string, updateIntegranteDto: UpdateIntegranteDto): Promise<ResponseUpdateDto> {
-    const integrante = await this.integranterepo.findOne({where :{id} })
+ 
+ async update(
+  id: string,
+  dto: UpdateIntegranteDto,
+): Promise<ResponseUpdateDto> {
+
+  return await this.dataSource.transaction(async manager => {
+
+    const integrante = await manager.findOne(Integrante, {
+      where: { id },
+      relations: {
+        especialidadesAsignadas: true,
+      },
+    });
+
     if (!integrante) {
-      throw new Error('Integrante no encontrado');
+      throw new NotFoundException('Integrante no encontrado');
     }
 
-      // ❗ Evitar que el DTO pise el ID
-  if ('id' in updateIntegranteDto) {
-    delete (updateIntegranteDto as any).id;
-  }
+    // Separar especialidades del resto del DTO
+    const { especialidades, ...datosIntegrante } = dto;
 
+    // Evitar modificar campos protegidos
+    const camposProtegidos = [
+      'id',
+      'persona',
+      'id_persona',
+      'creado_en',
+      'actualizado_en',
+      'eliminado_en',
+      'fecha_ingreso',
+    ];
 
-   // Campos que NO deben actualizarse nunca
-  const camposProtegidos = [
-    'id',
-    'persona',
-    'id_persona',
-    'creado_en',
-    'eliminado_en',
-    'actualizado_en',
-  ];
-
-  for (const campo of camposProtegidos) {
-    if (campo in updateIntegranteDto) {
-      delete (updateIntegranteDto as any)[campo];
+    for (const campo of camposProtegidos) {
+      delete (datosIntegrante as any)[campo];
     }
-  }
 
+    // Actualizar datos del integrante
+    Object.assign(integrante, datosIntegrante);
 
-  // ❗ Evitar que el DTO pise fecha_ingreso
-  if ('fecha_ingreso' in updateIntegranteDto) {
-    delete (updateIntegranteDto as any).fecha_ingreso;
-  }
+    const integranteGuardado = await manager.save(Integrante, integrante);
 
+    // -----------------------------
+    // ACTUALIZAR ESPECIALIDADES
+    // -----------------------------
+    if (especialidades) {
 
-    const update = Object.assign(integrante, updateIntegranteDto)
-    const saved = await this.integranterepo.save(update)
-    if (!saved) {
-  throw new Error('No se pudo actualizar el integrante');
-}
+      const repoIE = manager.getRepository(IntegranteEspecialidad);
+
+      // Eliminar relaciones actuales
+      await repoIE.delete({
+        integrante: {
+          id: integrante.id,
+        },
+      });
+
+      // Buscar especialidades existentes
+      const especialidadesBD = await manager.find(Especialidad, {
+        where: {
+          id: In(especialidades.map(e => e.id_especialidad)),
+        },
+      });
+
+      if (especialidadesBD.length !== especialidades.length) {
+        throw new NotFoundException(
+          'Una o más especialidades no existen',
+        );
+      }
+
+      // Insertar nuevamente
+      for (let i = 0; i < especialidades.length; i++) {
+
+        const esp = especialidadesBD.find(
+          e => e.id === especialidades[i].id_especialidad,
+        );
+
+        await repoIE.save(
+          repoIE.create({
+            integrante,
+            especialidad: esp!,
+            tipo: i === 0 ? 'primario' : 'secundario',
+          }),
+        );
+      }
+    }
 
     return {
-      id: saved.id,
-      tarifa_base_hora: saved.tarifa_base_hora,
-      moneda: saved.moneda,
-      fecha_ingreso: saved.fecha_ingreso,
-      estado: saved.estado,
-      creado_en: saved.creado_en,
-      actualizado_en: saved.actualizado_en,
-      eliminado_en: saved.eliminado_en ?? null
-     
-    }
-  }
+      id: integranteGuardado.id,
+      tarifa_base_hora: integranteGuardado.tarifa_base_hora,
+      moneda: integranteGuardado.moneda,
+      fecha_ingreso: integranteGuardado.fecha_ingreso,
+      estado: integranteGuardado.estado,
+      creado_en: integranteGuardado.creado_en,
+      actualizado_en: integranteGuardado.actualizado_en,
+      eliminado_en: integranteGuardado.eliminado_en ?? null,
+    };
+
+  });
+
+}
 
 
  async remove(id: string) {
@@ -261,7 +324,7 @@ async asignarEspecialidad(id: string, dto: AsignarEspecialidadDto) {
   // Buscar al integrante con sus especialidades asignadas
   const integrante = await this.integranterepo.findOne({
     where: { id },
-    relations: ['especialidadesAsignadas', 'especialidadesAsignadas.especialidad'],
+    relations: { especialidadesAsignadas: {especialidad:true} },
   });
 
   if (!integrante) throw new NotFoundException('Integrante no encontrado');
@@ -312,7 +375,7 @@ async asignarMultiplesEspecialidades(id: string, dto: AsignarVariasEspecialidade
   // Buscar al integrante con sus especialidades asignadas
   const integrante = await this.integranterepo.findOne({
     where: { id },
-    relations: ['especialidadesAsignadas', 'especialidadesAsignadas.especialidad'],
+    relations: { especialidadesAsignadas: {especialidad:true} },
   });
 
   if (!integrante) {
@@ -320,7 +383,7 @@ async asignarMultiplesEspecialidades(id: string, dto: AsignarVariasEspecialidade
   }
 
   // Buscar todas las especialidades solicitadas
-  const especialidades = await this.especialidadrepo.findByIds(dto.especialidades.map(e => e.id_especialidad));
+  const especialidades = await this.especialidadrepo.findBy({ id: In(dto.especialidades.map(e => e.id_especialidad))});
 
   if (especialidades.length !== dto.especialidades.length) {
     throw new NotFoundException('Una o más especialidades no existen');
@@ -335,7 +398,7 @@ async asignarMultiplesEspecialidades(id: string, dto: AsignarVariasEspecialidade
   const nuevas = especialidades.filter(e => !idsActuales.has(e.id));
 
   if (nuevas.length === 0) {
-    return { message: 'Todas las especialidades ya estaban asignadas' };
+    throw new BadRequestException('Todas las especialidades ya estaban asignadas');
   }
 
   // Verificar si ya existe una primaria
@@ -367,7 +430,7 @@ async eliminarEspecialidad(id: string, id_especialidad: string) {
   // Buscar al integrante con sus especialidades asignadas
   const integrante = await this.integranterepo.findOne({
     where: { id },
-    relations: ['especialidadesAsignadas', 'especialidadesAsignadas.especialidad'],
+    relations: { especialidadesAsignadas: {especialidad:true} },
   });
 
   if (!integrante) {
@@ -398,7 +461,7 @@ async listaEspecialidades(id: string) {
   // Buscar al integrante con sus especialidades asignadas
   const integrante = await this.integranterepo.findOne({
     where: { id },
-    relations: ['especialidadesAsignadas', 'especialidadesAsignadas.especialidad'],
+    relations: { especialidadesAsignadas: {especialidad:true} },
   });
 
   if (!integrante) {

@@ -1,8 +1,9 @@
 import { ValidateNested } from "class-validator";
 import { CreateUserDataDto } from "./create-user-data.dto";
-import { CreatePersonaDto } from "src/admin/personas/dto/create-persona.dto";
 import { Type } from "class-transformer";
 import { ApiProperty } from "@nestjs/swagger";
+import { CreatePersonaDto } from "../../personas/dto/create-persona.dto";
+import { Client } from "../../clients/entities/client.entity";
 export class CreateUserDto {
 
   @ApiProperty({ type: () => CreatePersonaDto })
@@ -16,7 +17,10 @@ export class CreateUserDto {
   @Type(() => CreateUserDataDto)
   user: CreateUserDataDto;
 
-
+@ApiProperty({ type: () => Client })
+  @ValidateNested()
+  @Type(() => Client)
+  cliente: Client;
 
 
 }

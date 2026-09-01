@@ -1,6 +1,8 @@
-import { Contrato } from "src/admin/contratos/entities/contrato.entity";
-import { Persona } from "src/admin/personas/entities/persona.entity";
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Persona } from "../../personas/entities/persona.entity";
+import { Contrato } from "../../contratos/entities/contrato.entity";
+import { User } from "../../users/entities/user.entity";
+import { Pago } from "../../pagos/entities/pago.entity";
 
 @Entity('notificaciones')
 export class Notificacione {
@@ -17,17 +19,40 @@ export class Notificacione {
   @CreateDateColumn({ type: 'timestamp' })
   fecha: Date;
 
-  @ManyToOne(() => Persona, { eager: true })
-  @JoinColumn({ name: 'persona_id' })
-  persona: Persona;
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'user_id' })
+  user: User;
 
-  @ManyToOne(() => Contrato, { eager: true })
+
+@ManyToOne(() => Contrato, { eager: true, nullable: true })
   @JoinColumn({ name: 'contrato_id' })
-  contrato: Contrato;
+  contrato: Contrato | null;
 
   @Column({ default: 'pendiente' })
   estado: 'pendiente' | 'aceptado' | 'rechazado';
 
+@Column({ default: false })
+leido: boolean;
 
+@ManyToOne(() => Pago, {
+  nullable: true,
+  eager: true,
+})
+@JoinColumn({ name: 'pago_id' })
+pago?: Pago | null;
+
+
+@Column({
+  type: 'enum',
+  enum: ['PAGO', 'CONTRATO', 'INTEGRANTE', 'CLIENTE', 'ADMIN', 'ADMIN_RESUMEN' , 'RECHAZADO', 'ADELANTO', 'APROBADO', 'CLIENTE_ACEPTO', 'CLIENTE_RECHAZO', 'RECUPERAR_PASSWORD'],
+})
+accion: string;
+
+  
+@Column({
+  type: 'uuid',
+  nullable: true
+})
+usuarioOrigenId?: string;
 
 }

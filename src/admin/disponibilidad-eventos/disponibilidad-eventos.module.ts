@@ -5,8 +5,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { DisponibilidadEvento } from './entities/disponibilidad-evento.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([DisponibilidadEvento])],
-  controllers: [DisponibilidadEventosController],
+  imports: [TypeOrmModule.forFeature([DisponibilidadEvento, DisponibilidadEvento])],
+  // controllers: [DisponibilidadEventosController],
   providers: [DisponibilidadEventosService],
+  exports: [DisponibilidadEventosService],
 })
 export class DisponibilidadEventosModule {}

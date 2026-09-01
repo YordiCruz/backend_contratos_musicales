@@ -22,4 +22,11 @@ export interface ResumenContratoDTO {
   pendientes: InvitacionDTO[];
   faltantes: string[];
   sugerencias: SugerenciaDTO[];
+  meta?: NotificacionMeta;
+}
+
+export interface NotificacionMeta {
+  contratoId?: string;
+  pagoId?: string;
+  monto?: number;
 }

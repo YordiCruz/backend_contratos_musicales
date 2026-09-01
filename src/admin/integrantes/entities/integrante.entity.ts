@@ -1,19 +1,18 @@
-import { ContratoIntegrante } from "src/admin/contratos/entities/contrato-integrante.entity";
-import { Especialidad } from "src/admin/especialidades/especialidads/entities/especialidad.entity";
-import { Persona } from "src/admin/personas/entities/persona.entity";
-import { User } from "src/admin/users/entities/user.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { IntegranteEspecialidad } from "./integrante-especialidad.entity";
+import { Persona } from "../../personas/entities/persona.entity";
+import { User } from "../../users/entities/user.entity";
+import { ContratoIntegrante } from "../../contratos/entities/contrato-integrante.entity";
 
 @Entity('group_members')
 export class Integrante {
 
     @PrimaryGeneratedColumn('uuid')
     id: string
-    
-    @Column({ type: 'uuid' })
-id_persona: string;
 
+   @OneToOne(() => User, user => user.integrante)
+   @JoinColumn({ name: 'user_id' })
+   user: User; 
 
    @OneToOne(() => Persona, persona => persona.integrante)
    @JoinColumn({ name: 'id_persona' })

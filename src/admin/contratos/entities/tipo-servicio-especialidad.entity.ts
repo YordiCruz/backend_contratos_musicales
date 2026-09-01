@@ -1,5 +1,5 @@
-import { Especialidad } from "src/admin/especialidades/especialidads/entities/especialidad.entity";
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Especialidad } from "../../especialidades/especialidads/entities/especialidad.entity";
 
 @Entity('servicio_especialidades')
 export class TipoServicioEspecialidad {

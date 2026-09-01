@@ -1,16 +1,19 @@
-import { Controller, Post, Param, Body } from '@nestjs/common';
+import { Controller, Post, Param, Body, Get, Req, UseGuards, Patch } from '@nestjs/common';
 import { NotificacionesService } from './notificaciones.service';
 import { PersonasService } from '../personas/personas.service';
 import { ContratosService } from '../contratos/contratos.service';
 import { CreateNotificacioneDto, TipoNotificacion } from './dto/create-notificacione.dto';
 import { SugerenciaDTO } from '../contratos/dto/resumen-contrato.dto';
+import { UsersService } from '../users/users.service';
+import { AdminJwtGuard } from '../../auth/admin-auth/guards/admin-jwt.guard';
+import { ClientJwtGuard } from '../../auth/client-auth/guards/client-jwt.guard';
 
 @Controller('notificaciones')
 export class NotificacionesController {
   constructor(
     private readonly notificacionService: NotificacionesService,
     private readonly contratoService: ContratosService,
-    private readonly personaService: PersonasService,
+    private readonly userService: UsersService,
   ) {}
 
 
@@ -23,15 +26,15 @@ async notificarReemplazos(@Param('contratoId') contratoId: string) {
   @Post(':contratoId/reemplazo/:personaId')
   async notificarReemplazo(
     @Param('contratoId') contratoId: string,
-    @Param('personaId') personaId: string,
+    @Param('userId') userId: string,
   ) {
     const contrato = await this.contratoService.getContrato(contratoId);
-    const persona = await this.personaService.findOne(personaId);
+    const user = await this.userService.findOne(userId);
 
     const dto: CreateNotificacioneDto = await this.notificacionService.generarNotificacion(
       TipoNotificacion.REEMPLAZO,
       contrato,
-      persona,
+      user,
     );
 
     return this.notificacionService.enviar(dto);
@@ -40,15 +43,15 @@ async notificarReemplazos(@Param('contratoId') contratoId: string) {
   @Post(':contratoId/cliente/:personaId')
   async notificarCliente(
     @Param('contratoId') contratoId: string,
-    @Param('personaId') personaId: string,
+    @Param('userId') userId: string,
   ) {
     const contrato = await this.contratoService.getContrato(contratoId);
-    const persona = await this.personaService.findOne(personaId);
+    const user = await this.userService.findOne(userId);
 
     const dto: CreateNotificacioneDto = await this.notificacionService.generarNotificacion(
       TipoNotificacion.CLIENTE,
       contrato,
-      persona,
+      user,
     );
 
     return this.notificacionService.enviar(dto);
@@ -57,17 +60,40 @@ async notificarReemplazos(@Param('contratoId') contratoId: string) {
   @Post(':contratoId/admin/:personaId')
   async notificarAdmin(
     @Param('contratoId') contratoId: string,
-    @Param('personaId') personaId: string,
+    @Param('userId') userId: string,
   ) {
     const contrato = await this.contratoService.getContrato(contratoId);
-    const persona = await this.personaService.findOne(personaId);
+    const user = await this.userService.findOne(userId);
 
     const dto: CreateNotificacioneDto = await this.notificacionService.generarNotificacion(
       TipoNotificacion.ADMIN,
       contrato,
-      persona,
+      user,
     );
 
     return this.notificacionService.enviar(dto);
   }
+
+
+ @UseGuards(AdminJwtGuard)
+@Get('/mis-notificaciones')
+obtenerAdmin(@Req() req) {
+  return this.notificacionService.obtenerMisNotificaciones(req.user.id);
+}
+
+
+@UseGuards(ClientJwtGuard)
+@Get('/mis-notificacione')
+obtenerCliente(@Req() req) {
+  return this.notificacionService.obtenerMisNotificaciones(req.user.id);
+}
+
+@Patch(':id/leida')
+marcarComoLeida(
+  @Param('id') id: string
+) {
+  return this.notificacionService.marcarComoLeida(id);
+}
+
+
 }

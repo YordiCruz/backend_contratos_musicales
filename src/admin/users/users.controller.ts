@@ -16,38 +16,42 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { FiltrosUserDto } from './dto/filtros-user.dto';
 import { CreateUserDataDto } from './dto/create-user-data.dto';
-import { AdminJwtGuard } from 'src/auth/admin-auth/guards/admin-jwt.guard';
 import { UpdatePasswordUsersDto } from './dto/update-password-users.dto';
+import { AdminJwtGuard } from '../../auth/admin-auth/guards/admin-jwt.guard';
+import { ClientJwtGuard } from '../../auth/client-auth/guards/client-jwt.guard';
 
-@UseGuards(AdminJwtGuard)
 @Controller('users')
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
-
-
   ) {}
 
+@UseGuards(AdminJwtGuard)
   @Post()
   create(@Req() req, @Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto, req.user);
   }
 
+@UseGuards(AdminJwtGuard)
   @Get()
   findAll(@Query() filters: FiltrosUserDto) {
     return this.usersService.findAll(filters);
   }
 
+@UseGuards(AdminJwtGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);
   }
 
+@UseGuards(AdminJwtGuard)
   @Patch(':id/editar')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(id, updateUserDto);
   }
 
+
+@UseGuards(AdminJwtGuard)
   @Patch(':id/password')
   updatepassword(
     @Param('id') id: string,
@@ -56,6 +60,8 @@ export class UsersController {
     return this.usersService.updatePassword(id, updateDto);
   }
 
+
+@UseGuards(AdminJwtGuard)
    @Patch(':id/passwordUsers')
   updatepasswordusers(
     @Param('id') id: string,
@@ -64,12 +70,15 @@ export class UsersController {
     return this.usersService.updatePasswordUsers(id, updateDto);
   }
 
+
+@UseGuards(AdminJwtGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);
   }
 
- 
+
+@UseGuards(AdminJwtGuard)
   @Post('from-persona/:idPersona')
 createUserFromPersona(
   @Param('idPersona') idPersona: string,
@@ -80,10 +89,25 @@ createUserFromPersona(
 
 
 // activar usuario 
-
+@UseGuards(AdminJwtGuard)
 @Patch(':id/activar')
 async activar(@Param('id') id: string) {
   return this.usersService.activar(id);
 }
+
+
+@UseGuards(AdminJwtGuard)
+@Post(':id/restablecer-password')
+async restablecerPassword(
+ @Param('id') id:string
+){
+
+ return this.usersService
+ .restablecerPasswordTemporal(id);
+
+}
+
+
+
 
 }

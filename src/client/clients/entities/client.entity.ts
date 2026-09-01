@@ -1,7 +1,7 @@
-import { Contrato } from "src/admin/contratos/entities/contrato.entity";
-import { Persona } from "src/admin/personas/entities/persona.entity";
-import { User } from "src/admin/users/entities/user.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Persona } from "../../../admin/personas/entities/persona.entity";
+import { Contrato } from "../../../admin/contratos/entities/contrato.entity";
+import { User } from "../../../admin/users/entities/user.entity";
 
 @Entity('clients')
 export class Client {

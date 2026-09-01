@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Integrante } from "./integrante.entity";
-import { Especialidad } from "src/admin/especialidades/especialidads/entities/especialidad.entity";
+import { Especialidad } from "../../especialidades/especialidads/entities/especialidad.entity";
 
 @Entity('members_specialties')
 export class IntegranteEspecialidad {

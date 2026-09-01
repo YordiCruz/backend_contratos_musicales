@@ -16,7 +16,7 @@ async crear(dto: CreateDatosEmpresaDto): Promise<DatosEmpresa> {
   try {
     const datos = this.datosRepo.create(dto);
     return await this.datosRepo.save(datos);
-  } catch (error) {
+  } catch (error: any) {
     throw new BadRequestException(error.message || 'Error al crear empresa');
   }
 }

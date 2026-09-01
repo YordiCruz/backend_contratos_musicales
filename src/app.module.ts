@@ -12,6 +12,8 @@ import { ClientModule } from './client/client.module';
 
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path'; // 👈 para rutas absolutas
+import { ScheduleModule } from '@nestjs/schedule';
+import { ReportesModule } from './admin/reportes/reportes.module';
 
 @Module({
   imports: [
@@ -20,6 +22,7 @@ import { join } from 'path'; // 👈 para rutas absolutas
       limit: 10,
     }]),
 
+    ScheduleModule.forRoot(),
     
 
     ConfigModule.forRoot({
@@ -34,7 +37,8 @@ import { join } from 'path'; // 👈 para rutas absolutas
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: true,
+      migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
+      synchronize: false,
     }),
 
       // Sirve los archivos de /uploads al frontend
@@ -44,10 +48,12 @@ import { join } from 'path'; // 👈 para rutas absolutas
       serveRoot: '/uploads', // Angular accederá a /uploads/nombre.png
     }),
 
+    // Importamos los modulos
     AdminModule,
 
     ClientModule,
 
+    // Definimos las rutas de los modulos
     RouterModule.register([
       {
         path: 'admin',
@@ -61,6 +67,9 @@ import { join } from 'path'; // 👈 para rutas absolutas
 
     
     DatabaseModule,
+
+    
+    ReportesModule,
 
     
   ],

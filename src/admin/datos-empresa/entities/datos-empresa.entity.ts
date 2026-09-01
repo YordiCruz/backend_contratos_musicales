@@ -31,4 +31,7 @@ export class DatosEmpresa {
 
     @Column({ length: 100, nullable: true })
     ciudad: string;
+
+    @Column({ type: 'varchar', length: 100, nullable: true })
+    documento_identidad: string;
 }

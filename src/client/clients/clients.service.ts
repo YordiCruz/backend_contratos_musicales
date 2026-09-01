@@ -2,13 +2,18 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Persona } from 'src/admin/personas/entities/persona.entity';
 import { DataSource, Repository } from 'typeorm';
 import { Client } from './entities/client.entity';
 import { FiltroClientDto } from './dto/filtro-client.dto';
 import { ClientResponseDto } from './dto/client-response.dto';
 import { UpdateResponseDto } from './dto/update-response.dto';
 import { CreateClientDataDto } from './dto/create-client-data.dto';
+import { Persona } from '../../admin/personas/entities/persona.entity';
+import { User } from '../../admin/users/entities/user.entity';
+
+import * as bcrypt from 'bcrypt';
+import { UpdatePasswordUsersDto } from '../../admin/users/dto/update-password-users.dto';
+
 
 @Injectable()
 export class ClientsService {
@@ -16,6 +21,9 @@ export class ClientsService {
   constructor(
       @InjectRepository(Client)
       private readonly clienteRepo: Repository<Client>,
+
+      @InjectRepository(User)
+      private readonly userrepo: Repository<User>,
 
       @InjectRepository(Persona)
       private readonly personaRepo: Repository<Persona>,
@@ -123,7 +131,10 @@ export class ClientsService {
   findOne(id: string) {
     const cliente = this.clienteRepo.findOne({
       where: { id },
-      relations: ['registrado_por','persona'],
+      relations: {
+        persona: true,
+        registrado_por: true
+      },
 
     });
 
@@ -202,5 +213,28 @@ async createClientFromExistingPersona(idPersona: string, dto: CreateClientDataDt
 }
 
 
+ async cambiarPasswordTemporal(id_usuario: string, nuevaPassword: string) {
+    const user = await this.userrepo.findOne({
+      where: {
+        id: id_usuario,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+
+    user.password_hash = await bcrypt.hash(nuevaPassword, 10);
+
+    user.password_temporal = false;
+
+    user.solicitud_recuperacion = false;
+
+    await this.userrepo.save(user);
+
+    return {
+      message: 'Contraseña actualizada correctamente',
+    }
+  }
 
 }
